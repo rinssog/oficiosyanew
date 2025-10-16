@@ -1,0 +1,305 @@
+// Prisma schema for OficiosYa MVP core
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id             String            @id @default(cuid())
+  email          String            @unique
+  name           String?
+  role           String            @default("CLIENT") // CLIENT | PROVIDER | ADMIN
+  passwordHash   String
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+  provider       Provider?
+  terms          TermsAcceptance[]
+  clientRequests Request[]         @relation("ClientRequests")
+}
+
+model Provider {
+  id          String             @id @default(cuid())
+  userId      String             @unique
+  user        User               @relation(fields: [userId], references: [id])
+  companyName String?
+  verified    Boolean            @default(false)
+  documents   Document[]
+  services    ProviderService[]
+  photos      Photo[]
+  requests    Request[]
+  quotes      Quote[]
+  slots       AvailabilitySlot[]
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+}
+
+model Document {
+  id         String   @id @default(cuid())
+  providerId String
+  kind       String // DNI_FRONT, DNI_BACK, CAP_GEDO, MATRICULA, AFIP, SEGURO
+  url        String
+  status     String   @default("PENDING") // PENDING|APPROVED|REJECTED|EXPIRED
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  provider   Provider @relation(fields: [providerId], references: [id])
+  revisions  DocumentRevision[]
+}
+
+model ServiceCatalog {
+  id               String            @id @default(cuid())
+  rubro            String
+  subrubro         String?
+  codigo           String            @unique
+  nombre           String
+  descripcion      String?
+  etiquetas        String?
+  habilitado       Boolean           @default(true)
+  providerServices ProviderService[]
+  requests         Request[]
+}
+
+model ProviderService {
+  id           String                @id @default(cuid())
+  providerId   String
+  catalogId    String
+  pricingType  String // FIXED | HOURLY | PER_KM | PER_UNIT
+  price        Int // centavos ARS
+  notes        String?
+  urgent       Boolean               @default(false)
+  updatedAt    DateTime              @updatedAt
+  createdAt    DateTime              @default(now())
+  provider     Provider              @relation(fields: [providerId], references: [id])
+  catalog      ServiceCatalog        @relation(fields: [catalogId], references: [id])
+  priceHistory ServicePriceHistory[]
+}
+
+model ServicePriceHistory {
+  id        String          @id @default(cuid())
+  serviceId String
+  oldPrice  Int
+  newPrice  Int
+  changedAt DateTime        @default(now())
+  service   ProviderService @relation(fields: [serviceId], references: [id])
+}
+
+model TermsAcceptance {
+  id           String   @id @default(cuid())
+  userId       String
+  contractType String
+  version      String
+  nameSigned   String
+  ipAddress    String?
+  hash         String
+  createdAt    DateTime @default(now())
+  user         User     @relation(fields: [userId], references: [id])
+}
+
+// Contenido versionado de Términos/Políticas
+model TermsContent {
+  id        String   @id @default(cuid())
+  kind      String   @default("GENERAL") // GENERAL | PRIVACY | OTHER
+  version   String
+  title     String
+  content   String
+  updatedAt DateTime @default(now())
+}
+
+model DocumentRevision {
+  id          String   @id @default(cuid())
+  documentId  String
+  action      String   // APPROVED|REJECTED|SUBMITTED|PENDING
+  notes       String?
+  actorId     String?
+  createdAt   DateTime @default(now())
+  document    Document @relation(fields: [documentId], references: [id])
+}
+
+model PaymentAttempt {
+  id            String   @id @default(cuid())
+  userId        String
+  providerId    String
+  quoteId       String?
+  base          Int
+  platformFee   Int
+  retained      Int
+  currency      String   @default("ARS")
+  status        String   @default("PENDING")
+  mpPreferenceId String?
+  mpPaymentId    String?
+  mpStatus       String?
+  metadata       Json?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model Request {
+  id         String         @id @default(cuid())
+  clientId   String
+  providerId String?
+  catalogId  String
+  status     String         @default("PENDING") // PENDING|QUOTED|CONFIRMED|IN_PROGRESS|DONE|CANCELLED
+  urgent     Boolean        @default(false)
+  address    String?
+  createdAt  DateTime       @default(now())
+  updatedAt  DateTime       @updatedAt
+  client     User           @relation("ClientRequests", fields: [clientId], references: [id])
+  provider   Provider?      @relation(fields: [providerId], references: [id])
+  catalog    ServiceCatalog @relation(fields: [catalogId], references: [id])
+  quotes     Quote[]
+}
+
+model Quote {
+  id             String      @id @default(cuid())
+  requestId      String
+  providerId     String
+  laborTotal     Int // centavos ARS
+  materialsTotal Int // centavos ARS
+  status         String      @default("PENDING") // PENDING|ACCEPTED|REJECTED
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+  request        Request     @relation(fields: [requestId], references: [id])
+  provider       Provider    @relation(fields: [providerId], references: [id])
+  items          QuoteItem[]
+}
+
+model QuoteItem {
+  id        String  @id @default(cuid())
+  quoteId   String
+  kind      String // LABOR | MATERIAL | PART | OTHER
+  title     String
+  qty       Int     @default(1)
+  unit      String? // h, km, unidad
+  unitPrice Int // centavos ARS
+  total     Int
+  quote     Quote   @relation(fields: [quoteId], references: [id])
+}
+
+model AvailabilitySlot {
+  id         String   @id @default(cuid())
+  providerId String
+  start      DateTime
+  end        DateTime
+  capacity   Int      @default(1)
+  provider   Provider @relation(fields: [providerId], references: [id])
+}
+
+model Appointment {
+  id         String   @id @default(cuid())
+  requestId  String
+  providerId String
+  clientId   String
+  start      DateTime
+  end        DateTime
+  status     String   @default("SCHEDULED")
+  createdAt  DateTime @default(now())
+}
+
+// Reglas de disponibilidad recurrentes
+model AvailabilityRule {
+  id            String   @id @default(cuid())
+  providerId    String
+  daysOfWeek    String   // CSV: MON,TUE,WED...
+  startTime     String   // HH:MM
+  endTime       String   // HH:MM
+  slotMinutes   Int      @default(60)
+  bufferMinutes Int      @default(0)
+  maxPerSlot    Int      @default(1)
+  maxPerDay     Int      @default(8)
+  urgent        Boolean  @default(false)
+  active        Boolean  @default(true)
+  timezone      String   @default("America/Argentina/Buenos_Aires")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  provider      Provider @relation(fields: [providerId], references: [id])
+}
+
+// Bloqueos por rango de fecha/hora
+model AvailabilityBlackout {
+  id         String   @id @default(cuid())
+  providerId String
+  start      DateTime
+  end        DateTime
+  reason     String?
+  createdAt  DateTime @default(now())
+  provider   Provider @relation(fields: [providerId], references: [id])
+}
+
+// Slots manuales publicados por el prestador
+model ManualSlot {
+  id         String   @id @default(cuid())
+  providerId String
+  date       DateTime
+  start      DateTime
+  end        DateTime
+  capacity   Int      @default(1)
+  urgent     Boolean  @default(false)
+  label      String?
+  notes      String?
+  createdAt  DateTime @default(now())
+  provider   Provider @relation(fields: [providerId], references: [id])
+}
+
+model Photo {
+  id         String   @id @default(cuid())
+  providerId String
+  url        String
+  label      String?
+  verified   Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  provider   Provider @relation(fields: [providerId], references: [id])
+}
+
+model ProviderMaterial {
+  id            String   @id @default(cuid())
+  providerId    String
+  requestId     String
+  description   String
+  amount        Int
+  currency      String   @default("ARS")
+  attachmentUrl String?
+  createdAt     DateTime @default(now())
+  provider      Provider @relation(fields: [providerId], references: [id])
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  actorId    String?
+  actorRole  String?
+  action     String
+  entity     String?
+  entityId   String?
+  payload    Json?
+  ip         String?
+  userAgent  String?
+  createdAt  DateTime @default(now())
+}
+
+model SubscriptionPlan {
+  id             String   @id @default(cuid())
+  name           String
+  priceMonthly   Int
+  commissionPct  Float
+  leadFee        Int
+  features       Json?
+  recommended    Boolean  @default(false)
+  active         Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  subscriptions  UserSubscription[]
+}
+
+model UserSubscription {
+  id         String   @id @default(cuid())
+  userId     String
+  planId     String
+  status     String   @default("ACTIVE") // ACTIVE | PAUSED | CANCELED
+  startedAt  DateTime @default(now())
+  renewAt    DateTime?
+  canceledAt DateTime?
+  user       User     @relation(fields: [userId], references: [id])
+  plan       SubscriptionPlan @relation(fields: [planId], references: [id])
+}

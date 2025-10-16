@@ -1,0 +1,23 @@
+[
+  {
+    "id": "landing",
+    "name": "Landing principal",
+    "status": "PUBLICADO",
+    "lastUpdated": "2025-10-02T02:05:09.729Z",
+    "notes": "Nueva seccion de testimonios"
+  },
+  {
+    "id": "planes",
+    "name": "Pagina de planes",
+    "status": "BORRADOR",
+    "lastUpdated": "2025-10-02T02:05:09.729Z",
+    "notes": "Actualizar precios segun plan"
+  },
+  {
+    "id": "faq",
+    "name": "FAQ chatbot",
+    "status": "PUBLICADO",
+    "lastUpdated": "2025-10-02T02:05:09.729Z",
+    "notes": "Agregar tutorial en video"
+  }
+]

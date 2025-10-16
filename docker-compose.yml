@@ -1,0 +1,62 @@
+version: "3.9"
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      - POSTGRES_USER=oficiosya
+      - POSTGRES_PASSWORD=oficiosya
+      - POSTGRES_DB=oficiosya
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+  api:
+    build: ./server-node
+    environment:
+      - PORT=4000
+      - ADMIN_TOKEN=${ADMIN_TOKEN:-MasterToken}
+      - JWT_SECRET=${JWT_SECRET:-change-me-please}
+      - STORAGE_DRIVER=${STORAGE_DRIVER:-json}
+      - CORS_ORIGINS=${CORS_ORIGINS:-http://localhost:3000}
+      - DATABASE_URL=${DATABASE_URL:-postgresql://oficiosya:oficiosya@db:5432/oficiosya?schema=public}
+    ports:
+      - "4000:4000"
+    volumes:
+      - ./server-node/data:/app/data
+      - ./server-node/uploads:/app/uploads
+    depends_on:
+      - db
+  web:
+    image: node:20-alpine
+    working_dir: /app
+    volumes:
+      - ./:/app
+    environment:
+      - NEXT_PUBLIC_API_BASE=http://localhost:4000
+    command: sh -c "npm ci && npm run dev"
+    ports:
+      - "3000:3000"
+    depends_on:
+      - api
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+  meilisearch:
+    image: getmeili/meilisearch:v1.8
+    environment:
+      - MEILI_NO_ANALYTICS=true
+    ports:
+      - "7700:7700"
+  minio:
+    image: quay.io/minio/minio:RELEASE.2024-09-13T20-26-02Z
+    command: server /data --console-address ":9001"
+    environment:
+      - MINIO_ROOT_USER=oficiosya
+      - MINIO_ROOT_PASSWORD=oficiosya123
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+
+volumes:
+  pgdata:

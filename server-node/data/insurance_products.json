@@ -1,0 +1,22 @@
+[
+  {
+    "id": "insurance_rc_hogar",
+    "name": "Seguro de responsabilidad civil hogar",
+    "coverage": 5000000,
+    "currency": "ARS",
+    "partner": "Aseguradora Demo",
+    "status": "ACTIVE",
+    "renewalDate": "2025-12-31T02:05:09.727Z",
+    "notes": "Cobertura base para trabajos domiciliarios. Incluye danos a terceros y bienes del cliente."
+  },
+  {
+    "id": "insurance_obra_puntual",
+    "name": "Seguro de obra puntual",
+    "coverage": 10000000,
+    "currency": "ARS",
+    "partner": "Aseguradora Demo",
+    "status": "EXPIRING",
+    "renewalDate": "2025-10-17T02:05:09.727Z",
+    "notes": "Aplicable a reformas o trabajos de construccion. Incluye cobertura de ART tercerizada."
+  }
+]

@@ -1,0 +1,1054 @@
+[
+  {
+    "id": "PLO-001",
+    "rubro": "Plomería",
+    "subrubro": "Grifería",
+    "nombre": "Reemplazo de canilla",
+    "etiquetas": [
+      "hogar"
+    ]
+  },
+  {
+    "id": "PLO-002",
+    "rubro": "Plomería",
+    "subrubro": "Destapaciones",
+    "nombre": "Destapación de cloaca",
+    "etiquetas": [
+      "hogar",
+      "urgencia"
+    ]
+  },
+  {
+    "id": "PLO-003",
+    "rubro": "Plomería",
+    "subrubro": "Instalaciones",
+    "nombre": "Instalación de bidet",
+    "etiquetas": [
+      "hogar"
+    ]
+  },
+  {
+    "id": "GAS-001",
+    "rubro": "Gasista matriculado",
+    "subrubro": "Urgencias",
+    "nombre": "Reparación de fuga de gas",
+    "etiquetas": [
+      "urgencia",
+      "matrícula"
+    ]
+  },
+  {
+    "id": "GAS-002",
+    "rubro": "Gasista matriculado",
+    "subrubro": "Instalaciones",
+    "nombre": "Instalación de termotanque",
+    "etiquetas": [
+      "hogar",
+      "matrícula"
+    ]
+  },
+  {
+    "id": "ELE-001",
+    "rubro": "Electricidad",
+    "subrubro": "Artefactos",
+    "nombre": "Instalación de lámpara",
+    "etiquetas": [
+      "hogar"
+    ]
+  },
+  {
+    "id": "ELE-002",
+    "rubro": "Electricidad",
+    "subrubro": "Tablero",
+    "nombre": "Colocación de disyuntor",
+    "etiquetas": [
+      "hogar",
+      "matrícula"
+    ]
+  },
+  {
+    "id": "ELE-003",
+    "rubro": "Electricidad",
+    "subrubro": "Climatización",
+    "nombre": "Instalación de aire acondicionado",
+    "etiquetas": [
+      "hogar"
+    ]
+  },
+  {
+    "id": "CER-001",
+    "rubro": "Cerrajería",
+    "subrubro": "Urgencias",
+    "nombre": "Apertura de puerta",
+    "etiquetas": [
+      "urgencia"
+    ]
+  },
+  {
+    "id": "CER-002",
+    "rubro": "Cerrajería",
+    "subrubro": "Seguridad",
+    "nombre": "Colocación de cerradura digital",
+    "etiquetas": [
+      "hogar"
+    ]
+  },
+  {
+    "id": "CAR-001",
+    "rubro": "Carpintería",
+    "subrubro": "Muebles a medida",
+    "nombre": "Fabricación de placard",
+    "etiquetas": [
+      "hogar"
+    ]
+  },
+  {
+    "id": "CAR-002",
+    "rubro": "Carpintería",
+    "subrubro": "Restauración",
+    "nombre": "Restauración de muebles",
+    "etiquetas": [
+      "hogar"
+    ]
+  },
+  {
+    "id": "PIN-001",
+    "rubro": "Pintura",
+    "subrubro": "Interior",
+    "nombre": "Pintura de ambiente hasta 20 m²",
+    "etiquetas": [
+      "hogar"
+    ]
+  },
+  {
+    "id": "PIN-002",
+    "rubro": "Pintura",
+    "subrubro": "Exterior",
+    "nombre": "Impermeabilización de terraza",
+    "etiquetas": [
+      "hogar"
+    ]
+  },
+  {
+    "id": "ALB-001",
+    "rubro": "Albañilería",
+    "subrubro": "Reformas",
+    "nombre": "Reparación de humedad de pared",
+    "etiquetas": [
+      "hogar"
+    ]
+  },
+  {
+    "id": "ALB-002",
+    "rubro": "Albañilería",
+    "subrubro": "Pisos",
+    "nombre": "Colocación de cerámicos",
+    "etiquetas": [
+      "hogar"
+    ]
+  },
+  {
+    "id": "JAR-001",
+    "rubro": "Jardinería",
+    "subrubro": "Mantenimiento",
+    "nombre": "Corte de césped y poda liviana",
+    "etiquetas": [
+      "hogar"
+    ]
+  },
+  {
+    "id": "JAR-002",
+    "rubro": "Jardinería",
+    "subrubro": "Sistemas de riego",
+    "nombre": "Instalación de riego automático",
+    "etiquetas": [
+      "hogar"
+    ]
+  },
+  {
+    "id": "LIM-001",
+    "rubro": "Limpieza",
+    "subrubro": "Hogares",
+    "nombre": "Servicio de limpieza por hora",
+    "etiquetas": [
+      "hogar"
+    ]
+  },
+  {
+    "id": "LIM-002",
+    "rubro": "Limpieza",
+    "subrubro": "Especiales",
+    "nombre": "Limpieza de tanques de agua",
+    "etiquetas": [
+      "matrícula"
+    ]
+  },
+  {
+    "id": "TAP-001",
+    "rubro": "Tapicería",
+    "subrubro": "Lavado",
+    "nombre": "Lavado de sillones a domicilio",
+    "etiquetas": [
+      "hogar"
+    ]
+  },
+  {
+    "id": "PLA-001",
+    "rubro": "Planchado y lavandería",
+    "subrubro": "A domicilio",
+    "nombre": "Servicio semanal de planchado",
+    "etiquetas": [
+      "hogar"
+    ]
+  },
+  {
+    "id": "MEC-001",
+    "rubro": "Mecánica a domicilio",
+    "subrubro": "General",
+    "nombre": "Diagnóstico mecánico liviano",
+    "etiquetas": [
+      "vehículos"
+    ]
+  },
+  {
+    "id": "REM-001",
+    "rubro": "Remolque",
+    "subrubro": "Auxilio 24/7",
+    "nombre": "Remolque liviano por kilómetro",
+    "etiquetas": [
+      "vehículos",
+      "urgencia"
+    ]
+  },
+  {
+    "id": "GOM-001",
+    "rubro": "Gomería móvil",
+    "subrubro": "Auxilio",
+    "nombre": "Cambio de neumático en ruta",
+    "etiquetas": [
+      "vehículos",
+      "urgencia"
+    ]
+  },
+  {
+    "id": "VET-001",
+    "rubro": "Veterinaria a domicilio",
+    "subrubro": "Urgencias",
+    "nombre": "Consulta veterinaria urgente",
+    "etiquetas": [
+      "mascotas",
+      "urgencia"
+    ]
+  },
+  {
+    "id": "NIN-001",
+    "rubro": "Cuidado de personas",
+    "subrubro": "Niñeras",
+    "nombre": "Niñera con referencias",
+    "etiquetas": [
+      "familia"
+    ]
+  },
+  {
+    "id": "ADU-001",
+    "rubro": "Cuidado de personas",
+    "subrubro": "Adultos mayores",
+    "nombre": "Acompañante domiciliario",
+    "etiquetas": [
+      "familia"
+    ]
+  },
+  {
+    "id": "IDI-001",
+    "rubro": "Clases particulares",
+    "subrubro": "Idiomas",
+    "nombre": "Clase de inglés por hora",
+    "etiquetas": [
+      "educación"
+    ]
+  },
+  {
+    "id": "IDI-002",
+    "rubro": "Clases particulares",
+    "subrubro": "Idiomas",
+    "nombre": "Clase de portugués por hora",
+    "etiquetas": [
+      "educación"
+    ]
+  },
+  {
+    "id": "IDI-003",
+    "rubro": "Clases particulares",
+    "subrubro": "Idiomas",
+    "nombre": "Clase de italiano por hora",
+    "etiquetas": [
+      "educación"
+    ]
+  },
+  {
+    "id": "APO-001",
+    "rubro": "Clases particulares",
+    "subrubro": "Apoyo escolar",
+    "nombre": "Matemática nivel secundario",
+    "etiquetas": [
+      "educación"
+    ]
+  },
+  {
+    "id": "PRO-001",
+    "rubro": "Profesionales",
+    "subrubro": "Abogacía",
+    "nombre": "Consulta legal inicial",
+    "etiquetas": [
+      "profesional",
+      "matrícula"
+    ]
+  },
+  {
+    "id": "PRO-002",
+    "rubro": "Profesionales",
+    "subrubro": "Contadores",
+    "nombre": "Liquidación de impuestos",
+    "etiquetas": [
+      "profesional",
+      "matrícula"
+    ]
+  },
+  {
+    "id": "PRO-003",
+    "rubro": "Profesionales",
+    "subrubro": "Psicología",
+    "nombre": "Sesión individual online",
+    "etiquetas": [
+      "profesional",
+      "matrícula"
+    ]
+  },
+  {
+    "id": "PRO-004",
+    "rubro": "Profesionales",
+    "subrubro": "Arquitectura",
+    "nombre": "Proyecto de ampliación",
+    "etiquetas": [
+      "profesional",
+      "matrícula"
+    ]
+  },
+  {
+    "id": "PRO-005",
+    "rubro": "Profesionales",
+    "subrubro": "Ingeniería",
+    "nombre": "Cálculo estructural",
+    "etiquetas": [
+      "profesional",
+      "matrícula"
+    ]
+  },
+  {
+    "id": "TRD-001",
+    "rubro": "Servicios lingüísticos",
+    "subrubro": "Traducción",
+    "nombre": "Traducción técnica",
+    "etiquetas": [
+      "profesional"
+    ]
+  },
+  {
+    "id": "TEC-001",
+    "rubro": "Tecnología",
+    "subrubro": "Informática",
+    "nombre": "Reparación de PC a domicilio",
+    "etiquetas": [
+      "tecnología"
+    ]
+  },
+  {
+    "id": "TEC-002",
+    "rubro": "Tecnología",
+    "subrubro": "Celulares",
+    "nombre": "Cambio de pantalla de smartphone",
+    "etiquetas": [
+      "tecnología"
+    ]
+  },
+  {
+    "id": "RED-001",
+    "rubro": "Tecnología",
+    "subrubro": "Redes",
+    "nombre": "Instalación de red Wi-Fi",
+    "etiquetas": [
+      "tecnología"
+    ]
+  },
+  {
+    "id": "FOT-001",
+    "rubro": "Eventos",
+    "subrubro": "Fotografía",
+    "nombre": "Cobertura fotográfica social",
+    "etiquetas": [
+      "eventos"
+    ]
+  },
+  {
+    "id": "EVE-001",
+    "rubro": "Eventos",
+    "subrubro": "Catering",
+    "nombre": "Catering informal por persona",
+    "etiquetas": [
+      "eventos"
+    ]
+  },
+  {
+    "id": "EVE-002",
+    "rubro": "Eventos",
+    "subrubro": "DJ & sonido",
+    "nombre": "DJ para evento corporativo",
+    "etiquetas": [
+      "eventos"
+    ]
+  },
+  {
+    "id": "FUM-001",
+    "rubro": "Fumigación",
+    "subrubro": "Doméstica",
+    "nombre": "Control de plagas básico",
+    "etiquetas": [
+      "hogar",
+      "urgencia"
+    ]
+  },
+  {
+    "id": "CLI-001",
+    "rubro": "Climatización",
+    "subrubro": "Aires acondicionados",
+    "nombre": "Mantenimiento de aire split",
+    "etiquetas": [
+      "hogar"
+    ]
+  },
+  {
+    "id": "SEG-001",
+    "rubro": "Seguros",
+    "subrubro": "Garantías de obra",
+    "nombre": "Seguro de responsabilidad civil",
+    "etiquetas": [
+      "profesional"
+    ]
+  },
+  {
+    "id": "LOG-001",
+    "rubro": "Logística",
+    "subrubro": "Cadetería móvil",
+    "nombre": "Entrega express en moto",
+    "etiquetas": [
+      "logística"
+    ]
+  },
+  {
+    "id": "LOG-002",
+    "rubro": "Logística",
+    "subrubro": "Mensajería corporativa",
+    "nombre": "Reparto programado semanal",
+    "etiquetas": [
+      "logística"
+    ]
+  },
+  {
+    "id": "IMP-001",
+    "rubro": "Impresiones 3D",
+    "subrubro": "Prototipado",
+    "nombre": "Modelado e impresión 3D",
+    "etiquetas": [
+      "tecnología"
+    ]
+  },
+  {
+    "id": "HOG-001",
+    "rubro": "Hogar",
+    "subrubro": "Electrodomésticos",
+    "nombre": "Reparación de lavarropas",
+    "etiquetas": [
+      "hogar"
+    ]
+  },
+  {
+    "id": "HOG-PLO-001",
+    "rubro": "Plomeria",
+    "subrubro": "Instalaciones",
+    "nombre": "Cambio de canilla monocontrol",
+    "categoria": "HOGAR_MANTENIMIENTO",
+    "subcategoria": "Plomeria",
+    "etiquetas": [
+      "hogar",
+      "griferia",
+      "cocina"
+    ],
+    "modalidades": [
+      "PRESENCIAL"
+    ],
+    "permiteUrgencias": false,
+    "sinonimos": [
+      "cambio de grifo",
+      "reemplazo de canilla"
+    ],
+    "tiempoEstimado": 90
+  },
+  {
+    "id": "HOG-PLO-002",
+    "rubro": "Plomeria",
+    "subrubro": "Destapaciones",
+    "nombre": "Destapacion de cloaca",
+    "categoria": "HOGAR_MANTENIMIENTO",
+    "subcategoria": "Plomeria",
+    "etiquetas": [
+      "hogar",
+      "urgencia",
+      "cloaca"
+    ],
+    "modalidades": [
+      "PRESENCIAL"
+    ],
+    "permiteUrgencias": true,
+    "sinonimos": [
+      "destapacion urgente",
+      "cloaca tapada"
+    ],
+    "tiempoEstimado": 60
+  },
+  {
+    "id": "HOG-PLO-003",
+    "rubro": "Plomeria",
+    "subrubro": "Instalaciones",
+    "nombre": "Instalacion de termotanque",
+    "categoria": "HOGAR_MANTENIMIENTO",
+    "subcategoria": "Plomeria",
+    "etiquetas": [
+      "hogar",
+      "agua caliente"
+    ],
+    "modalidades": [
+      "PRESENCIAL"
+    ],
+    "permiteUrgencias": false,
+    "tiempoEstimado": 180
+  },
+  {
+    "id": "HOG-ELE-001",
+    "rubro": "Electricidad",
+    "subrubro": "Diagnostico",
+    "nombre": "Revision de cortocircuito",
+    "categoria": "HOGAR_MANTENIMIENTO",
+    "subcategoria": "Electricidad",
+    "etiquetas": [
+      "hogar",
+      "urgencia",
+      "tablero"
+    ],
+    "modalidades": [
+      "PRESENCIAL"
+    ],
+    "permiteUrgencias": true,
+    "sinonimos": [
+      "salta disyuntor",
+      "tablero quemado"
+    ],
+    "tiempoEstimado": 60
+  },
+  {
+    "id": "HOG-ELE-002",
+    "rubro": "Electricidad",
+    "subrubro": "Instalaciones",
+    "nombre": "Instalacion de toma corriente",
+    "categoria": "HOGAR_MANTENIMIENTO",
+    "subcategoria": "Electricidad",
+    "etiquetas": [
+      "hogar",
+      "enchufe"
+    ],
+    "modalidades": [
+      "PRESENCIAL"
+    ],
+    "permiteUrgencias": false,
+    "sinonimos": [
+      "colocar enchufe",
+      "cambiar toma"
+    ],
+    "tiempoEstimado": 45
+  },
+  {
+    "id": "HOG-GAS-001",
+    "rubro": "Gasista matriculado",
+    "subrubro": "Urgencias",
+    "nombre": "Reparacion de fuga de gas",
+    "categoria": "HOGAR_MANTENIMIENTO",
+    "subcategoria": "Gas",
+    "etiquetas": [
+      "hogar",
+      "urgencia",
+      "matricula"
+    ],
+    "modalidades": [
+      "PRESENCIAL"
+    ],
+    "permiteUrgencias": true,
+    "sinonimos": [
+      "perdida de gas",
+      "gasista urgente"
+    ],
+    "tiempoEstimado": 90
+  },
+  {
+    "id": "HOG-CER-001",
+    "rubro": "Cerrajeria",
+    "subrubro": "Urgencias",
+    "nombre": "Apertura de puerta",
+    "categoria": "HOGAR_MANTENIMIENTO",
+    "subcategoria": "Cerrajeria",
+    "etiquetas": [
+      "urgencia",
+      "cerrajero"
+    ],
+    "modalidades": [
+      "PRESENCIAL",
+      "MOVIL"
+    ],
+    "permiteUrgencias": true,
+    "sinonimos": [
+      "abrir puerta",
+      "cerrajero urgente"
+    ],
+    "tiempoEstimado": 45
+  },
+  {
+    "id": "HOG-PIN-001",
+    "rubro": "Pintura",
+    "subrubro": "Interior",
+    "nombre": "Pintura de ambiente hasta 20m2",
+    "categoria": "HOGAR_MANTENIMIENTO",
+    "subcategoria": "Pintura",
+    "etiquetas": [
+      "hogar",
+      "interior"
+    ],
+    "modalidades": [
+      "PRESENCIAL"
+    ],
+    "permiteUrgencias": false,
+    "tiempoEstimado": 240
+  },
+  {
+    "id": "HOG-FUM-001",
+    "rubro": "Fumigacion",
+    "subrubro": "Plagas",
+    "nombre": "Fumigacion domiciliaria",
+    "categoria": "HOGAR_MANTENIMIENTO",
+    "subcategoria": "Fumigacion",
+    "etiquetas": [
+      "hogar",
+      "plagas"
+    ],
+    "modalidades": [
+      "PRESENCIAL"
+    ],
+    "permiteUrgencias": false,
+    "sinonimos": [
+      "fumigar",
+      "control de plagas"
+    ],
+    "tiempoEstimado": 120
+  },
+  {
+    "id": "HOG-VAR-001",
+    "rubro": "Limpieza",
+    "subrubro": "Tanques",
+    "nombre": "Limpieza de tanque de agua",
+    "categoria": "HOGAR_MANTENIMIENTO",
+    "subcategoria": "Limpieza",
+    "etiquetas": [
+      "hogar",
+      "tanque"
+    ],
+    "modalidades": [
+      "PRESENCIAL"
+    ],
+    "permiteUrgencias": false,
+    "tiempoEstimado": 180
+  },
+  {
+    "id": "MOV-CAD-001",
+    "rubro": "Cadeteria",
+    "subrubro": "Express",
+    "nombre": "Cadeteria urbana",
+    "categoria": "MOVILIDAD_AUXILIO",
+    "subcategoria": "Cadeteria",
+    "etiquetas": [
+      "movilidad",
+      "envio"
+    ],
+    "modalidades": [
+      "MOVIL"
+    ],
+    "permiteUrgencias": true,
+    "sinonimos": [
+      "delivery urgente",
+      "mensajeria"
+    ],
+    "tiempoEstimado": 60
+  },
+  {
+    "id": "MOV-FLE-001",
+    "rubro": "Fletes",
+    "subrubro": "Mudanzas",
+    "nombre": "Flete local hasta 20km",
+    "categoria": "MOVILIDAD_AUXILIO",
+    "subcategoria": "Fletes y Mudanzas",
+    "etiquetas": [
+      "movilidad",
+      "flete"
+    ],
+    "modalidades": [
+      "MOVIL"
+    ],
+    "permiteUrgencias": false,
+    "tiempoEstimado": 240
+  },
+  {
+    "id": "MOV-REM-001",
+    "rubro": "Remolque",
+    "subrubro": "Vehiculos livianos",
+    "nombre": "Remolque de vehiculo",
+    "categoria": "MOVILIDAD_AUXILIO",
+    "subcategoria": "Remolques",
+    "etiquetas": [
+      "movilidad",
+      "remolque",
+      "urgencia"
+    ],
+    "modalidades": [
+      "MOVIL"
+    ],
+    "permiteUrgencias": true,
+    "tiempoEstimado": 90
+  },
+  {
+    "id": "MOV-GOM-001",
+    "rubro": "Gomeria movil",
+    "subrubro": "Cambio de neumaticos",
+    "nombre": "Cambio de neumatico en ruta",
+    "categoria": "MOVILIDAD_AUXILIO",
+    "subcategoria": "Gomeria movil",
+    "etiquetas": [
+      "movilidad",
+      "gomeria",
+      "urgencia"
+    ],
+    "modalidades": [
+      "MOVIL"
+    ],
+    "permiteUrgencias": true,
+    "tiempoEstimado": 60
+  },
+  {
+    "id": "EDU-IDI-001",
+    "rubro": "Idiomas",
+    "subrubro": "Ingles",
+    "nombre": "Clase de ingles 60 minutos",
+    "categoria": "EDUCACION_CAPACITACION",
+    "subcategoria": "Idiomas",
+    "etiquetas": [
+      "educacion",
+      "ingles",
+      "clase"
+    ],
+    "modalidades": [
+      "VIRTUAL",
+      "PRESENCIAL"
+    ],
+    "permiteUrgencias": false,
+    "sinonimos": [
+      "profesor ingles",
+      "clase virtual ingles"
+    ],
+    "tiempoEstimado": 60
+  },
+  {
+    "id": "EDU-PAR-001",
+    "rubro": "Clases particulares",
+    "subrubro": "Matematica",
+    "nombre": "Apoyo escolar en matematica",
+    "categoria": "EDUCACION_CAPACITACION",
+    "subcategoria": "Clases particulares",
+    "etiquetas": [
+      "educacion",
+      "apoyo"
+    ],
+    "modalidades": [
+      "VIRTUAL",
+      "PRESENCIAL"
+    ],
+    "permiteUrgencias": false,
+    "tiempoEstimado": 90
+  },
+  {
+    "id": "PRO-LEG-001",
+    "rubro": "Servicios profesionales",
+    "subrubro": "Legal",
+    "nombre": "Consulta legal UMA",
+    "categoria": "PROFESIONALES_COLEGIADOS",
+    "subcategoria": "Abogacia",
+    "etiquetas": [
+      "profesionales",
+      "uma",
+      "matricula"
+    ],
+    "modalidades": [
+      "PRESENCIAL",
+      "VIRTUAL"
+    ],
+    "permiteUrgencias": false,
+    "tiempoEstimado": 45
+  },
+  {
+    "id": "PRO-CON-001",
+    "rubro": "Servicios profesionales",
+    "subrubro": "Contable",
+    "nombre": "Balance trimestral",
+    "categoria": "PROFESIONALES_COLEGIADOS",
+    "subcategoria": "Contabilidad",
+    "etiquetas": [
+      "profesionales",
+      "contable"
+    ],
+    "modalidades": [
+      "VIRTUAL",
+      "PRESENCIAL"
+    ],
+    "permiteUrgencias": false,
+    "tiempoEstimado": 240
+  },
+  {
+    "id": "BIO-PTR-001",
+    "rubro": "Bienestar",
+    "subrubro": "Personal trainer",
+    "nombre": "Sesion personal trainer",
+    "categoria": "BIENESTAR_ESTETICA",
+    "subcategoria": "Personal trainer",
+    "etiquetas": [
+      "bienestar",
+      "fitness"
+    ],
+    "modalidades": [
+      "PRESENCIAL",
+      "VIRTUAL"
+    ],
+    "permiteUrgencias": false,
+    "tiempoEstimado": 60
+  },
+  {
+    "id": "BIO-MAS-001",
+    "rubro": "Bienestar",
+    "subrubro": "Masajes",
+    "nombre": "Masaje descontracturante",
+    "categoria": "BIENESTAR_ESTETICA",
+    "subcategoria": "Masajes",
+    "etiquetas": [
+      "bienestar",
+      "masajes"
+    ],
+    "modalidades": [
+      "PRESENCIAL"
+    ],
+    "permiteUrgencias": false,
+    "tiempoEstimado": 60
+  },
+  {
+    "id": "MASC-VET-001",
+    "rubro": "Mascotas",
+    "subrubro": "Veterinaria",
+    "nombre": "Consulta veterinaria a domicilio",
+    "categoria": "MASCOTAS",
+    "subcategoria": "Veterinaria",
+    "etiquetas": [
+      "mascotas",
+      "veterinaria"
+    ],
+    "modalidades": [
+      "PRESENCIAL",
+      "MOVIL"
+    ],
+    "permiteUrgencias": true,
+    "tiempoEstimado": 60
+  },
+  {
+    "id": "MASC-PAS-001",
+    "rubro": "Mascotas",
+    "subrubro": "Paseo",
+    "nombre": "Paseo canino 60 minutos",
+    "categoria": "MASCOTAS",
+    "subcategoria": "Paseo",
+    "etiquetas": [
+      "mascotas",
+      "paseo"
+    ],
+    "modalidades": [
+      "MOVIL"
+    ],
+    "permiteUrgencias": false,
+    "tiempoEstimado": 60
+  },
+  {
+    "id": "TEC-SOP-001",
+    "rubro": "Tecnologia",
+    "subrubro": "Soporte",
+    "nombre": "Reparacion de notebook",
+    "categoria": "TECNOLOGIA_SOPORTE",
+    "subcategoria": "Soporte informatico",
+    "etiquetas": [
+      "tecnologia",
+      "notebook"
+    ],
+    "modalidades": [
+      "PRESENCIAL",
+      "VIRTUAL"
+    ],
+    "permiteUrgencias": false,
+    "tiempoEstimado": 180
+  },
+  {
+    "id": "TEC-RED-001",
+    "rubro": "Tecnologia",
+    "subrubro": "Redes",
+    "nombre": "Instalacion red wifi hogar",
+    "categoria": "TECNOLOGIA_SOPORTE",
+    "subcategoria": "Redes",
+    "etiquetas": [
+      "tecnologia",
+      "wifi"
+    ],
+    "modalidades": [
+      "PRESENCIAL"
+    ],
+    "permiteUrgencias": false,
+    "tiempoEstimado": 120
+  },
+  {
+    "id": "EVE-BAR-001",
+    "rubro": "Eventos",
+    "subrubro": "Bartender",
+    "nombre": "Servicio de bartender 4 horas",
+    "categoria": "EVENTOS",
+    "subcategoria": "Bartender",
+    "etiquetas": [
+      "eventos",
+      "bartender"
+    ],
+    "modalidades": [
+      "PRESENCIAL"
+    ],
+    "permiteUrgencias": false,
+    "tiempoEstimado": 240
+  },
+  {
+    "id": "EVE-DJ-001",
+    "rubro": "Eventos",
+    "subrubro": "DJ",
+    "nombre": "DJ para evento social",
+    "categoria": "EVENTOS",
+    "subcategoria": "DJ",
+    "etiquetas": [
+      "eventos",
+      "musica"
+    ],
+    "modalidades": [
+      "PRESENCIAL"
+    ],
+    "permiteUrgencias": false,
+    "tiempoEstimado": 300
+  },
+  {
+    "id": "LIM-TEX-001",
+    "rubro": "Limpieza",
+    "subrubro": "Tapizados",
+    "nombre": "Lavado de tapizado de sillones",
+    "categoria": "SERVICIOS_ESPECIALES",
+    "subcategoria": "Lavado de tapizados",
+    "etiquetas": [
+      "limpieza",
+      "tapizado"
+    ],
+    "modalidades": [
+      "PRESENCIAL"
+    ],
+    "permiteUrgencias": false,
+    "tiempoEstimado": 180
+  },
+  {
+    "id": "FAM-NIN-001",
+    "rubro": "Ni�era",
+    "subrubro": "Turnos",
+    "nombre": "Servicio de ni�era 4 horas",
+    "categoria": "NINOS_FAMILIA",
+    "subcategoria": "Nineras",
+    "etiquetas": [
+      "familia",
+      "ninos"
+    ],
+    "modalidades": [
+      "PRESENCIAL"
+    ],
+    "permiteUrgencias": false,
+    "tiempoEstimado": 240
+  },
+  {
+    "id": "FAM-CUI-001",
+    "rubro": "Cuidadores",
+    "subrubro": "Adultos mayores",
+    "nombre": "Cuidadores de adultos mayores turno diurno",
+    "categoria": "NINOS_FAMILIA",
+    "subcategoria": "Cuidadores",
+    "etiquetas": [
+      "familia",
+      "cuidado"
+    ],
+    "modalidades": [
+      "PRESENCIAL"
+    ],
+    "permiteUrgencias": false,
+    "tiempoEstimado": 480
+  },
+  {
+    "id": "SAL-NUT-001",
+    "rubro": "Bienestar",
+    "subrubro": "Nutricion",
+    "nombre": "Consulta nutricional inicial",
+    "categoria": "BIENESTAR_ESTETICA",
+    "subcategoria": "Nutricion",
+    "etiquetas": [
+      "bienestar",
+      "salud"
+    ],
+    "modalidades": [
+      "VIRTUAL",
+      "PRESENCIAL"
+    ],
+    "permiteUrgencias": false,
+    "tiempoEstimado": 60
+  },
+  {
+    "id": "SOP-WAR-001",
+    "rubro": "Warehouse",
+    "subrubro": "Materiales",
+    "nombre": "Suministro materiales plomeria basicos",
+    "categoria": "SERVICIOS_ESPECIALES",
+    "subcategoria": "Warehouse",
+    "etiquetas": [
+      "materiales",
+      "logistica"
+    ],
+    "modalidades": [
+      "MOVIL"
+    ],
+    "permiteUrgencias": false,
+    "tiempoEstimado": 120
+  }
+]

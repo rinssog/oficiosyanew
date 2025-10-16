@@ -1,0 +1,32 @@
+[
+  {
+    "id": "contract_obra_menor",
+    "name": "Contrato de obra menor",
+    "version": "1.2",
+    "scope": "Hogar",
+    "category": "HOGAR",
+    "lastUpdated": "2025-10-02T02:05:09.724Z",
+    "downloadUrl": null,
+    "description": "Clausulas basicas para trabajos domiciliarios menores, incluye responsabilidades, garantias y plazos de pago."
+  },
+  {
+    "id": "contract_servicio_profesional",
+    "name": "Servicio profesional UMA",
+    "version": "0.9",
+    "scope": "Profesionales",
+    "category": "PROFESIONALES",
+    "lastUpdated": "2025-10-02T02:05:09.724Z",
+    "downloadUrl": null,
+    "description": "Acuerdo marco para consultorias y atencion profesional bajo la ley argentina vigente."
+  },
+  {
+    "id": "checklist_urgencias",
+    "name": "Checklist entrega urgencia",
+    "version": "1.0",
+    "scope": "Urgencias 24/7",
+    "category": "URGENCIA",
+    "lastUpdated": "2025-10-02T02:05:09.724Z",
+    "downloadUrl": null,
+    "description": "Formato para validar finalizacion de trabajos urgentes con evidencia fotografica y firma digital."
+  }
+]

@@ -1,0 +1,47 @@
+[
+  {
+    "id": "plan_base",
+    "name": "Base",
+    "priceMonthly": 0,
+    "priceYearly": 0,
+    "commissionPct": 0.15,
+    "leadFee": 700,
+    "urgentIncluded": false,
+    "features": [
+      "Publicacion en marketplace",
+      "Cobro por transaccion",
+      "Verificacion documental basica"
+    ]
+  },
+  {
+    "id": "plan_pro",
+    "name": "Profesional",
+    "priceMonthly": 11900,
+    "priceYearly": 119000,
+    "commissionPct": 0.1,
+    "leadFee": 350,
+    "urgentIncluded": true,
+    "features": [
+      "Prioridad en ranking",
+      "Urgencias 24/7",
+      "Dashboard de KPI",
+      "Atencion preferencial"
+    ],
+    "recommended": true
+  },
+  {
+    "id": "plan_empresas",
+    "name": "Empresas",
+    "priceMonthly": 34900,
+    "priceYearly": 349000,
+    "commissionPct": 0.08,
+    "leadFee": 0,
+    "urgentIncluded": true,
+    "features": [
+      "Cuenta multi agente",
+      "Integracion ERP",
+      "Gestor comercial dedicado",
+      "Reportes avanzados"
+    ]
+  }
+]
