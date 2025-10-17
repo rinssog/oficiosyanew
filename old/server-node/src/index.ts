@@ -21,7 +21,7 @@ import searchRouter from "./routes/search.js";
 import appointmentsRouter from "./routes/appointments.js";
 import { seedAll, seedInitialUser } from "./services/seeding.js";
 
-import { logger } from "./utils/logger";
+import { logger } from "./utils/logger.js";
 import { requestLogger } from "./observability/logger.js";
 
 
