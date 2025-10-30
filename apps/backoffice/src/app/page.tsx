@@ -1,18 +1,20 @@
-"use client";
-
-import { useEffect, useMemo, useState } from "react";
-import Link from "next/link";
-import NavBar from "../_components/NavBar";
-import Footer from "../_components/Footer";
-import styles from "../_pages/Home.module.css";
+import Navbar from "@/components/landing/navbar";
+import Footer from "@/components/landing/footer";
+import Hero from "@/components/landing/hero";
+import QuickFilters from "@/components/landing/quick-filters";
+import Catalog from "@/components/landing/catalog";
+import Trust from "@/components/landing/trust";
+import Zones from "@/components/landing/zones";
+import Urgency from "@/components/landing/urgency";
+import Featured from "@/components/landing/featured";
+import Faq from "@/components/landing/faq";
+import Plans from "@/components/landing/plans";
 
 export const metadata = {
   title: "OficiosYa | Profesionales verificados para tu hogar y empresa",
 };
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE ?? "http://localhost:4000";
-
-const FALLBACK_CATEGORIES = [
+const CATEGORIES = [
   {
     name: "Plomería completa",
     description: "Instalaciones sanitarias, gas y urgencias 24/7",
@@ -115,7 +117,6 @@ const CLIENT_PLANS = [
       "Evaluaciones y reseñas",
       "Soporte por chat",
     ],
-    accent: styles.planEssential,
     savings: "Sin costo mensual",
   },
   {
@@ -127,7 +128,6 @@ const CLIENT_PLANS = [
       "Garantía extendida",
       "Línea de ayuda 7x24",
     ],
-    accent: styles.planPlus,
     highlight: true,
     savings: "Ahorro 12% en urgencias",
   },
@@ -140,7 +140,6 @@ const CLIENT_PLANS = [
       "Reportes mensuales",
       "Cobertura multi-propiedad",
     ],
-    accent: styles.planPremium,
     savings: "Incluye agenda ejecutiva",
   },
 ];
@@ -182,358 +181,29 @@ const QUICK_FILTERS = [
 ];
 
 export default function Home() {
-  const [catalog, setCatalog] = useState(FALLBACK_CATEGORIES);
-  const [loadingCatalog, setLoadingCatalog] = useState(true);
-  const [activeFaq, setActiveFaq] = useState<number | null>(null);
-
-  useEffect(() => {
-    let cancelled = false;
-    fetch(`${API_BASE}/api/catalog`)
-      .then((res) => res.json())
-      .then((payload) => {
-        if (cancelled) return;
-        if (
-          payload?.ok !== false &&
-          Array.isArray(payload?.catalog) &&
-          payload.catalog.length > 0
-        ) {
-          setCatalog(
-            payload.catalog.map((item: any) => ({
-              name: item.nombre || item.categoria || "Servicio",
-              description:
-                item.descripcion ||
-                item.resumen ||
-                "Prestador especializado con documentación vigente",
-              href: `/client/buscar?category=${encodeURIComponent(
-                item.categoria || item.nombre || "",
-              )}`,
-              badge: item.permiteUrgencias ? "Urgencias" : undefined,
-            })),
-          );
-        }
-      })
-      .catch(() => undefined)
-      .finally(() => setLoadingCatalog(false));
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  const topCategories = useMemo(() => catalog.slice(0, 6), [catalog]);
-
-  const toggleFaq = (index: number) => {
-    setActiveFaq((current) => (current === index ? null : index));
-  };
-
   return (
-    <div className={styles.container}>
-      <NavBar />
-      <main className={styles.main}>
-        <section className={styles.hero}>
-          <div className={styles.heroCopy}>
-            <span className={styles.badge}>
-              Plataforma integral de oficios y servicios
-            </span>
-            <h1>
-              Registrate y gestioná todos tus prestadores desde un solo lugar
-            </h1>
-            <p className={styles.subtitle}>
-              Ingresá como cliente para solicitar trabajos, coordinar agenda,
-              seguir evidencias y calificar a profesionales con documentación
-              validada por nuestro backoffice.
-            </p>
-            <div className={styles.heroActions}>
-              <Link href="/auth/register" className={styles.ctaPrimary}>
-                Crear cuenta
-              </Link>
-              <Link
-                href="/auth/login?role=provider"
-                className={styles.ctaSecondary}
-              >
-                Soy prestador verificado
-              </Link>
-              <Link
-                href="/soporte#validacion-identidad"
-                className={styles.ctaOutline}
-              >
-                Ver cómo verificamos prestadores
-              </Link>
-            </div>
-            <ul className={styles.heroHighlights}>
-              <li>Documentación y matrículas validadas por humanos</li>
-              <li>Retención operativa del 50 % — sin señas ni letra chica</li>
-              <li>Urgencias 24/7 con tiempos controlados y trazabilidad</li>
-            </ul>
-            <div className={styles.heroTrust}>
-              <span>
-                Backoffice 9–19 hs · Evidencias digitales · Cumplimiento Defensa
-                del Consumidor
-              </span>
-            </div>
-          </div>
-          <div className={styles.heroVisual}>
-            <img src="/assets/hero-illustration.svg" alt="Panel OficiosYa" />
-          </div>
-        </section>
+    <>
+      <Navbar />
 
-        <section className={styles.quickFilters}>
-          {QUICK_FILTERS.map((filter) => (
-            <Link key={filter.label} href={filter.href}>
-              {filter.label}
-            </Link>
-          ))}
-        </section>
+      <main className="mx-auto max-w-7xl px-4 py-8 md:px-8 md:py-12">
+        <Hero />
+        <QuickFilters items={QUICK_FILTERS} />
+        <Catalog items={CATEGORIES} />
 
-        <section className={styles.catalogSection}>
-          <header className={styles.sectionHeader}>
-            <div>
-              <h2>Buscá por rubro</h2>
-              <p>
-                Elegí el servicio que necesitás y recibí presupuestos de
-                prestadores verificados.
-              </p>
-            </div>
-            <Link href="/client/buscar" className={styles.sectionLink}>
-              Ver buscador completo
-            </Link>
-          </header>
-          <div className={styles.catalogGrid}>
-            {(loadingCatalog ? FALLBACK_CATEGORIES : topCategories).map(
-              (item) => (
-                <article key={item.name} className={styles.catalogCard}>
-                  <div>
-                    {item.badge ? (
-                      <span className={styles.catalogBadge}>{item.badge}</span>
-                    ) : null}
-                    <strong>{item.name}</strong>
-                    <p>{item.description}</p>
-                  </div>
-                  <Link href={item.href}>Explorar rubro</Link>
-                </article>
-              ),
-            )}
-          </div>
-        </section>
+        <Trust />
 
-        <section className={styles.trustSection} id="validacion">
-          <div className={styles.trustCopy}>
-            <h2>Verificación documental y seguridad legal</h2>
-            <p>
-              El equipo de OficiosYa valida cada credencial antes de habilitar
-              un perfil. Todas las aceptaciones de términos generan hash, IP y
-              timestamp para auditoría, cumpliendo con la Ley de Defensa del
-              Consumidor.
-            </p>
-            <ul>
-              <li>DNI frente y dorso + antecedentes penales GEDO</li>
-              <li>Matrículas y seguros obligatorios por rubro</li>
-              <li>Retención operativa del 50 % para urgencias (no seña)</li>
-            </ul>
-            <Link
-              href="/soporte#validacion-identidad"
-              className={styles.ctaOutline}
-            >
-              Checklist completo de verificación
-            </Link>
-          </div>
-          <div className={styles.trustCards}>
-            <article>
-              <h3>Backoffice dedicado</h3>
-              <p>
-                Operamos lunes a viernes de 9 a 19 hs y atendemos urgencias
-                críticas fuera de horario.
-              </p>
-            </article>
-            <article>
-              <h3>Agenda auditada</h3>
-              <p>
-                Cancelaciones y reprogramaciones quedan registradas con
-                trazabilidad y notificación automática.
-              </p>
-            </article>
-            <article>
-              <h3>Denuncias y soporte</h3>
-              <p>
-                Canal exclusivo para reportar irregularidades y suspender
-                cuentas de forma preventiva.
-              </p>
-            </article>
-          </div>
-        </section>
+        <Zones items={PROVINCE_ZONES} />
 
-        <section className={styles.zonesSection}>
-          <header className={styles.sectionHeader}>
-            <div>
-              <h2>Cobertura federal</h2>
-              <p>
-                Sumamos cuadrillas en las provincias y cordones urbanos con
-                mayor demanda.
-              </p>
-            </div>
-          </header>
-          <div className={styles.zonesGrid}>
-            {PROVINCE_ZONES.map((zone) => (
-              <div key={zone.province} className={styles.zoneCard}>
-                <strong>{zone.province}</strong>
-                <span>{zone.focus}</span>
-              </div>
-            ))}
-          </div>
-        </section>
+        <Urgency />
 
-        <section className={styles.urgencySection}>
-          <div className={styles.urgencyContent}>
-            <span className={styles.urgencyIcon}>🚨</span>
-            <div>
-              <h3>Asistencia rápida cuando la necesitás</h3>
-              <p>
-                Prestadores con habilitaciones vigentes listos para resolver
-                urgencias domiciliarias, asegurar instalaciones y dejar registro
-                del trabajo.
-              </p>
-            </div>
-            <Link href="/client/urgencias" className={styles.urgencyBtn}>
-              Conocer el servicio
-            </Link>
-          </div>
-        </section>
+        <Featured items={FEATURED_PROVIDERS} />
 
-        <section className={styles.featuredSection}>
-          <header className={styles.sectionHeader}>
-            <div>
-              <h2>Prestadores destacados</h2>
-              <p>
-                Perfiles con documentación completa, agenda activa y métricas de
-                respuesta controladas.
-              </p>
-            </div>
-          </header>
-          <div className={styles.cardsGrid}>
-            {FEATURED_PROVIDERS.map((provider) => (
-              <article key={provider.id} className={styles.providerCard}>
-                <div className={styles.providerHeader}>
-                  <img
-                    src={provider.avatar}
-                    alt={provider.name}
-                    width={56}
-                    height={56}
-                  />
-                  <div>
-                    <strong>{provider.name}</strong>
-                    <span>{provider.role}</span>
-                    <span className={styles.cardRating}>
-                      Rating {provider.rating.toFixed(1)} ({provider.reviews})
-                    </span>
-                  </div>
-                  {provider.verified ? (
-                    <span className={styles.verifiedBadge}>Verificado</span>
-                  ) : null}
-                </div>
-                <ul className={styles.serviceList}>
-                  {provider.services.map((service) => (
-                    <li key={service}>{service}</li>
-                  ))}
-                </ul>
-                <div className={styles.providerMeta}>
-                  <span>{provider.response}</span>
-                  <span>Agenda digital</span>
-                </div>
-                <div className={styles.providerActions}>
-                  <Link
-                    href={`/providers/${provider.id}`}
-                    className={styles.cardPrimary}
-                  >
-                    Ver perfil
-                  </Link>
-                  <Link
-                    href={`/providers/${provider.id}?tab=evidencias`}
-                    className={styles.cardSecondary}
-                  >
-                    Evidencias
-                  </Link>
-                </div>
-              </article>
-            ))}
-          </div>
-        </section>
+        <Plans items={CLIENT_PLANS} />
 
-        <section className={styles.plansSection}>
-          <header className={styles.sectionHeader}>
-            <div>
-              <h2>Suscripciones para clientes</h2>
-              <p>
-                Elegí el plan que te permite delegar tareas y recibir soporte a
-                medida.
-              </p>
-            </div>
-            <Link href="/planes" className={styles.sectionLink}>
-              Comparar planes
-            </Link>
-          </header>
-          <div className={styles.tiersGrid}>
-            {CLIENT_PLANS.map((plan) => (
-              <article
-                key={plan.name}
-                className={`${styles.planCard} ${plan.highlight ? styles.planHighlight : ""} ${plan.accent}`}
-              >
-                <div className={styles.planHeader}>
-                  <h3 className={styles.planName}>{plan.name}</h3>
-                  <p className={styles.planPrice}>
-                    {plan.price} <span>por mes</span>
-                  </p>
-                  {plan.savings ? (
-                    <span className={styles.planSavings}>{plan.savings}</span>
-                  ) : null}
-                  <p className={styles.planDescription}>{plan.summary}</p>
-                </div>
-                <ul>
-                  {plan.perks.map((perk) => (
-                    <li key={perk}>{perk}</li>
-                  ))}
-                </ul>
-                <Link href="/planes">Solicitar información</Link>
-              </article>
-            ))}
-          </div>
-        </section>
-
-        <section className={styles.faqSection}>
-          <header className={styles.sectionHeader}>
-            <div>
-              <h2>Preguntas frecuentes</h2>
-              <p>
-                Desplegá cada punto para conocer cómo trabajamos y qué esperamos
-                de prestadores y clientes.
-              </p>
-            </div>
-          </header>
-          <div className={styles.faqList}>
-            {FAQ_ITEMS.map((item, index) => {
-              const isOpen = activeFaq === index;
-              return (
-                <div
-                  key={item.question}
-                  className={`${styles.faqItem} ${isOpen ? styles.faqItemOpen : ""}`}
-                >
-                  <button
-                    type="button"
-                    className={styles.faqQuestion}
-                    onClick={() => toggleFaq(index)}
-                    aria-expanded={isOpen}
-                  >
-                    <span>{item.question}</span>
-                    <span className={styles.faqIcon}>{isOpen ? "-" : "+"}</span>
-                  </button>
-                  {isOpen ? (
-                    <p className={styles.faqAnswer}>{item.answer}</p>
-                  ) : null}
-                </div>
-              );
-            })}
-          </div>
-        </section>
+        <Faq items={FAQ_ITEMS} />
       </main>
+
       <Footer />
-    </div>
+    </>
   );
 }
