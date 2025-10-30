@@ -1,0 +1,94 @@
+:root {
+  /* Paleta institucional afinada */
+  --primary: #16a34a; /* emerald 600 */
+  --primary-600: #22c55e;
+  --primary-700: #166534;
+  --primary-contrast: #ffffff;
+  --accent: #a3e635;
+  --accent-soft: #e6f7cb;
+  --danger: #f66e5b;
+  --danger-soft: #fde7e3;
+  --bg: #f8faf9;
+  --panel: #ecf7ef;
+  --border: #cfe8d9;
+  --shadow-soft: 0 18px 45px rgba(22, 101, 52, 0.12);
+  --text: #111827;
+  --text-soft: #4b5f55;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#__next {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: "Poppins", "Plus Jakarta Sans", "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, "Roboto", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  line-height: 1.6;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: "Space Grotesk", "Plus Jakarta Sans", sans-serif;
+  color: var(--primary-700);
+  margin: 0;
+}
+
+p {
+  margin: 0;
+  color: var(--text-soft);
+}
+
+a {
+  color: var(--primary-600);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+a:hover {
+  color: var(--primary-700);
+}
+
+button {
+  font-family: inherit;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+button:hover {
+  transform: translateY(-1px);
+}
+
+input,
+select,
+textarea {
+  font-family: inherit;
+}
+
+::selection {
+  background: var(--accent);
+  color: var(--primary-contrast);
+}
+
+/* Animación sutil del logo */
+.logo-breathe {
+  transition: transform 0.25s ease, filter 0.25s ease;
+}
+
+.logo-breathe:hover {
+  transform: translateY(-1px) scale(1.03);
+  filter: drop-shadow(0 10px 18px rgba(22, 101, 52, 0.18));
+}

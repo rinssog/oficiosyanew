@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="140" height="140" viewBox="0 0 120 120">
+  <defs>
+    <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#F7E07D"/>
+      <stop offset="50%" stop-color="#D4AF37"/>
+      <stop offset="100%" stop-color="#B8890B"/>
+    </linearGradient>
+    <linearGradient id="green" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1B7D52"/>
+      <stop offset="100%" stop-color="#0F5C3E"/>
+    </linearGradient>
+    <filter id="innerShadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feOffset dx="0" dy="1"/>
+      <feGaussianBlur stdDeviation="1.5" result="offOut"/>
+      <feComposite in="SourceAlpha" in2="offOut" operator="arithmetic" k2="-1" k3="1" result="shadow"/>
+      <feColorMatrix in="shadow" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 .35 0"/>
+      <feBlend in="SourceGraphic" mode="normal"/>
+    </filter>
+  </defs>
+
+  <!-- Shield outline -->
+  <path d="M60 8 C72 18 88 18 100 20 C100 55 87 88 60 104 C33 88 20 55 20 20 C32 18 48 18 60 8 Z" fill="url(#gold)"/>
+  <path d="M60 14 C70 22 84 22 94 24 C94 54 83 82 60 96 C37 82 26 54 26 24 C36 22 50 22 60 14 Z" fill="url(#green)" filter="url(#innerShadow)"/>
+
+  <!-- YA letters -->
+  <g transform="translate(60,60)" text-anchor="middle" dominant-baseline="central">
+    <text x="0" y="2" font-family="Poppins, Arial, sans-serif" font-weight="700" font-size="40" fill="#ffffff">Ya</text>
+  </g>
+</svg>
