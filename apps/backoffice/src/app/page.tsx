@@ -9,6 +9,7 @@ import Urgency from "@/components/landing/urgency";
 import Featured from "@/components/landing/featured";
 import Faq from "@/components/landing/faq";
 import Plans from "@/components/landing/plans";
+import { HydrateClient } from "@/trpc/server";
 
 export const metadata = {
   title: "OficiosYa | Profesionales verificados para tu hogar y empresa",
@@ -177,12 +178,12 @@ const QUICK_FILTERS = [
   { label: "Verificados OficiosYa", href: "/client/buscar?verificados=true" },
   { label: "Servicios virtuales", href: "/client/buscar?modalidad=virtual" },
   { label: "Visitas a domicilio", href: "/client/buscar?modalidad=presencial" },
-  { label: "Planes con agenda", href: "/planes" },
+  { label: "Planes con agenda", href: "/plans" },
 ];
 
 export default function Home() {
   return (
-    <>
+    <HydrateClient>
       <Navbar />
 
       <main className="mx-auto max-w-7xl px-4 py-8 md:px-8 md:py-12">
@@ -204,6 +205,6 @@ export default function Home() {
       </main>
 
       <Footer />
-    </>
+    </HydrateClient>
   );
 }
