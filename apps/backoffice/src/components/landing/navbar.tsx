@@ -12,7 +12,7 @@ export default function Navbar() {
   };
 
   const primaryLinks = [
-    { href: "/plans", label: "Planes" },
+    { href: "/planes", label: "Planes" },
     { href: "/contacto", label: "Contacto" },
     { href: "/soporte", label: "Centro de ayuda" },
   ];

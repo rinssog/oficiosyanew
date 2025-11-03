@@ -70,8 +70,9 @@ const PROVIDER_BENEFITS = [
 export default async function PlansPage() {
   return (
     <HydrateClient>
-      <Navbar />
-      <main className="mx-auto max-w-7xl px-4 py-10 md:px-8 md:py-14">
+      <div className="flex min-h-screen flex-col">
+        <Navbar />
+        <main className="mx-auto max-w-7xl flex-1 px-4 py-10 md:px-8 md:py-14">
         <section className="py-6">
           <div className="space-y-3">
             <h1 className="text-3xl font-bold tracking-tight text-gray-900 md:text-4xl">
@@ -175,8 +176,9 @@ export default async function PlansPage() {
             </li>
           </ol>
         </section>
-      </main>
-      <Footer />
+        </main>
+        <Footer />
+      </div>
     </HydrateClient>
   );
 }

@@ -184,27 +184,27 @@ const QUICK_FILTERS = [
 export default function Home() {
   return (
     <HydrateClient>
-      <Navbar />
+      <div className="flex min-h-screen flex-col">
+        <Navbar />
+        <main className="mx-auto max-w-7xl flex-1 px-4 py-8 md:px-8 md:py-12">
+          <Hero />
+          <QuickFilters items={QUICK_FILTERS} />
+          <Catalog items={CATEGORIES} />
 
-      <main className="mx-auto max-w-7xl px-4 py-8 md:px-8 md:py-12">
-        <Hero />
-        <QuickFilters items={QUICK_FILTERS} />
-        <Catalog items={CATEGORIES} />
+          <Trust />
 
-        <Trust />
+          <Zones items={PROVINCE_ZONES} />
 
-        <Zones items={PROVINCE_ZONES} />
+          <Urgency />
 
-        <Urgency />
+          <Featured items={FEATURED_PROVIDERS} />
 
-        <Featured items={FEATURED_PROVIDERS} />
+          <Plans items={CLIENT_PLANS} />
 
-        <Plans items={CLIENT_PLANS} />
-
-        <Faq items={FAQ_ITEMS} />
-      </main>
-
-      <Footer />
+          <Faq items={FAQ_ITEMS} />
+        </main>
+        <Footer />
+      </div>
     </HydrateClient>
   );
 }
