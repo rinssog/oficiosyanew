@@ -11,6 +11,7 @@ import superjson from "superjson";
 import { ZodError } from "zod";
 
 import { db } from "@/server/db";
+import { delay } from "@/lib/time";
 
 /**
  * 1. CONTEXT
@@ -84,8 +85,8 @@ const timingMiddleware = t.middleware(async ({ next, path }) => {
 
   if (t._config.isDev) {
     // artificial delay in dev
-    const waitMs = Math.floor(Math.random() * 400) + 100;
-    await new Promise((resolve) => setTimeout(resolve, waitMs));
+    const ms = Math.floor(Math.random() * 400) + 100;
+    await delay(ms);
   }
 
   const result = await next();
