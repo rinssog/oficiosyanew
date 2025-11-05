@@ -1,16 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useAuth } from "../../contexts/AuthContext";
+import Logo from "@/components/ui/logo";
 
 export default function Navbar() {
-  //   const { user, provider, logout, isReady } = useAuth() as any;
-
-  const handleLogout = () => {
-    // logout?.();
-    if (typeof window !== "undefined") window.location.href = "/";
-  };
-
   const primaryLinks = [
     { href: "/planes", label: "Planes" },
     { href: "/contacto", label: "Contacto" },
@@ -21,10 +14,8 @@ export default function Navbar() {
     <header className="sticky top-0 z-50 border-b bg-white/90 backdrop-blur">
       <div className="mx-auto flex items-center justify-between px-4 py-4 md:px-8">
         <Link href="/" className="group inline-flex items-center gap-3">
-          <img
+          <Logo
             className="h-10 w-10 transition-transform group-hover:scale-105"
-            src="/assets/oficiosya-logo.svg"
-            alt="OficiosYa"
             width={40}
             height={40}
           />
@@ -71,7 +62,7 @@ export default function Navbar() {
                 Ingresar prestadores
               </Link>
               <Link
-                href="/auth/register"
+                href="/auth/sign-up"
                 className="rounded-full bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-emerald-700"
               >
                 Crear cuenta
