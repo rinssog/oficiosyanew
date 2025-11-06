@@ -1,5 +1,6 @@
 ## Fixes:
 
+- all copy from landing
 - mails de contacto
   - atencion.oficiosya@gmail.com
 - tab metadata
