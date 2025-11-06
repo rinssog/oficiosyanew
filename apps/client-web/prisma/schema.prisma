@@ -15,7 +15,7 @@ model User {
     name          String
     email         String
     emailVerified Boolean @default(false)
-    avatar        String?
+    image         String?
 
     createdAt DateTime @default(now())
     updatedAt DateTime @default(now()) @updatedAt
