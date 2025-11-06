@@ -8,3 +8,5 @@ export const authServer = betterAuth({
   database: prismaAdapter(prisma, { provider: "sqlite" }),
   emailAndPassword: { enabled: true },
 });
+
+export type Session = Awaited<ReturnType<typeof authServer.api.getSession>>;

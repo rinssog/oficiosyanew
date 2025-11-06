@@ -2,8 +2,105 @@
 
 import Link from "next/link";
 import Logo from "@/components/ui/logo";
+import { authClient } from "@/lib/auth-client";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+} from "@/components/ui/popover";
+import { UserUtils } from "@/lib/user";
+import type { Session } from "@/lib/auth";
+import { useRouter } from "next/navigation";
 
-export default function Navbar() {
+function AuthenticatedActions({ user }: Pick<NonNullable<Session>, "user">) {
+  const router = useRouter();
+  function getUserInitials() {
+    const { firstName, lastName } = UserUtils.getInitials(user.name);
+    return firstName + lastName;
+  }
+
+  async function handleSignOut() {
+    await authClient.signOut();
+    router.refresh();
+  }
+
+  return (
+    <div className="flex items-center gap-2">
+      <Link
+        href="/app"
+        className="rounded-full bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-emerald-700"
+      >
+        Ir a la app
+      </Link>
+
+      <Popover>
+        <PopoverTrigger asChild>
+          <button
+            type="button"
+            aria-label="Abrir menú de usuario"
+            className="rounded-full hover:cursor-pointer focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+          >
+            <Avatar className="size-8 outline-2">
+              {!!user.image ? (
+                <AvatarImage src={user.image} alt={user.name || "Usuario"} />
+              ) : (
+                <AvatarFallback className="font-medium">
+                  {getUserInitials()}
+                </AvatarFallback>
+              )}
+            </Avatar>
+          </button>
+        </PopoverTrigger>
+        <PopoverContent align="end" sideOffset={8} className="w-56 p-1">
+          <div className="flex flex-col">
+            <Link
+              href="/dashboard/profile"
+              className="rounded-sm px-2 py-1.5 text-sm hover:bg-emerald-50 hover:text-emerald-700"
+            >
+              Perfil
+            </Link>
+            <Link
+              href="/dashboard/preferences"
+              className="rounded-sm px-2 py-1.5 text-sm hover:bg-emerald-50 hover:text-emerald-700"
+            >
+              Preferencias
+            </Link>
+            <div className="my-1 h-px bg-gray-200" />
+            <button
+              type="button"
+              onClick={handleSignOut}
+              className="rounded-sm px-2 py-1.5 text-left text-sm text-red-700 hover:bg-red-50"
+            >
+              Cerrar sesión
+            </button>
+          </div>
+        </PopoverContent>
+      </Popover>
+    </div>
+  );
+}
+
+function NotAuthenticatedAction() {
+  return (
+    <div className="flex flex-wrap items-center gap-2">
+      <Link
+        href="/auth/sign-in"
+        className="rounded-full bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-700 hover:bg-emerald-100"
+      >
+        Iniciar sesión
+      </Link>
+      <Link
+        href="/auth/sign-up"
+        className="rounded-full bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-emerald-700"
+      >
+        Crear cuenta
+      </Link>
+    </div>
+  );
+}
+
+export default function Navbar({ session }: { session: Session }) {
   const primaryLinks = [
     { href: "/planes", label: "Planes" },
     { href: "/contacto", label: "Contacto" },
@@ -33,41 +130,10 @@ export default function Navbar() {
             </Link>
           ))}
 
-          {false ? ( // isReady && user
-            <div className="flex items-center gap-3">
-              {/* <span className="text-sm font-semibold text-emerald-800">
-                {user.name || user.email}
-                {provider ? " · Prestador" : ""}
-              </span>
-              <button
-                type="button"
-                onClick={handleLogout}
-                className="rounded-full bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-emerald-700 focus:ring-2 focus:ring-emerald-500 focus:outline-none"
-              >
-                Cerrar sesión
-              </button> */}
-            </div>
+          {!session ? (
+            <NotAuthenticatedAction />
           ) : (
-            <div className="flex flex-wrap items-center gap-2">
-              <Link
-                href="/auth/login?role=client"
-                className="rounded-full bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-700 hover:bg-emerald-100"
-              >
-                Ingresar clientes
-              </Link>
-              <Link
-                href="/auth/login?role=provider"
-                className="rounded-full bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-700 hover:bg-emerald-100"
-              >
-                Ingresar prestadores
-              </Link>
-              <Link
-                href="/auth/sign-up"
-                className="rounded-full bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-emerald-700"
-              >
-                Crear cuenta
-              </Link>
-            </div>
+            <AuthenticatedActions {...session} />
           )}
         </nav>
       </div>

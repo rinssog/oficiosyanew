@@ -10,6 +10,8 @@ import Featured from "@/components/landing/featured";
 import Faq from "@/components/landing/faq";
 import Plans from "@/components/landing/plans";
 import { HydrateClient } from "@/trpc/server";
+import { authServer } from "@/lib/auth";
+import { headers } from "next/headers";
 
 export const metadata = {
   title: "OficiosYa | Profesionales verificados para tu hogar y empresa",
@@ -181,30 +183,30 @@ const QUICK_FILTERS = [
   { label: "Planes con agenda", href: "/plans" },
 ];
 
-export default function Home() {
+export default async function Page() {
+  const session = await authServer.api.getSession({ headers: await headers() });
+
   return (
-    <HydrateClient>
-      <div className="flex min-h-screen flex-col">
-        <Navbar />
-        <main className="mx-auto max-w-7xl flex-1 px-4 py-8 md:px-8 md:py-12">
-          <Hero />
-          <QuickFilters items={QUICK_FILTERS} />
-          <Catalog items={CATEGORIES} />
+    <div className="flex min-h-screen flex-col">
+      <Navbar session={session} />
+      <main className="mx-auto max-w-7xl flex-1 px-4 py-8 md:px-8 md:py-12">
+        <Hero />
+        <QuickFilters items={QUICK_FILTERS} />
+        <Catalog items={CATEGORIES} />
 
-          <Trust />
+        <Trust />
 
-          <Zones items={PROVINCE_ZONES} />
+        <Zones items={PROVINCE_ZONES} />
 
-          <Urgency />
+        <Urgency />
 
-          <Featured items={FEATURED_PROVIDERS} />
+        <Featured items={FEATURED_PROVIDERS} />
 
-          <Plans items={CLIENT_PLANS} />
+        <Plans items={CLIENT_PLANS} />
 
-          <Faq items={FAQ_ITEMS} />
-        </main>
-        <Footer />
-      </div>
-    </HydrateClient>
+        <Faq items={FAQ_ITEMS} />
+      </main>
+      <Footer />
+    </div>
   );
 }
