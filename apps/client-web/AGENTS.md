@@ -56,14 +56,14 @@ Environment
 Local Development
 
 - Runtime: `bun`
-- Install: `bun install` (preferred) or `npm i`
+- Install: `bun install` (preferred)
 - Dev server: `bun dev`
 - Type check: `bun types`
 - Lint: `bun lint`
 - Format: `bun fmt`
 - Build: `bun build`
 - Start: `bun start`
-- Add shadcn component: `npx shadcn@latest add`
+- Add shadcn component: `bunx shadcn@latest add`
 - Generate tRPC types if applicable to your setup; ensure editor TypeScript server is picking up project references.
 
 App Router Guidelines
@@ -119,6 +119,7 @@ shadcn/ui + Tailwind
 - Components:
   - Place generated shadcn components under `src/components/ui`.
   - Do not modify shadcn base components heavily; wrap them for app-specific needs in `src/components/{feature}`.
+  - UI imports rule: import UI components only from `@/components/**`. Do not import Radix primitives directly in app code; prefer the wrapped shadcn components under `src/components/**`.
 - Styling:
   - Use Tailwind utility classes; avoid inline styles except for dynamic cases.
   - Prefer `class-variance-authority` patterns if present, otherwise stick to simple props.
@@ -140,16 +141,16 @@ Error Handling and Logging
 
 Testing
 
-- Unit tests: `vitest` in `*.test.ts(x)` adjacent to code.
-- Component tests: `vitest` + `@testing-library/react`.
-- e2e (optional): `playwright` under `e2e/` with an isolated test DB if applicable.
+<!-- - Unit tests: `vitest` in `*.test.ts(x)` adjacent to code. -->
+<!-- - Component tests: `vitest` + `@testing-library/react`. -->
+<!-- - e2e (optional): `playwright` under `e2e/` with an isolated test DB if applicable. -->
 - For tRPC, test routers by calling procedures with a mocked context.
 - CI should run typecheck, lint, tests, and build.
 
 Performance
 
 - Default to server components to reduce client JS.
-- Split critical above-the-fold UI carefully; use `loading.tsx` for skeletons.
+<!-- - Split critical above-the-fold UI carefully; use `loading.tsx` for skeletons. -->
 - Memoize expensive client components; avoid unnecessary `useEffect`.
 - Use `dynamic()` with `ssr: false` only when strictly necessary.
 
@@ -158,6 +159,7 @@ Security
 - Never trust client input; always validate via Zod.
 - Ensure auth checks on all mutations and protected queries.
 - Sanitize/escape user-generated content before render.
+- Do not log Enviroment variables
 - Do not log secrets.
 - Do not log tokens.
 - Keep dependencies updated and minimal.
