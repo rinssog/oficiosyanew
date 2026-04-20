@@ -30,6 +30,8 @@ import { computeProviderSlotsPrisma } from "../services/slotCompute.js";
 const uploadDir = fileURLToPath(new URL("../../uploads", import.meta.url));
 const upload = multer({ dest: uploadDir });
 
+import { getRepos } from "../repositories/factory.js";
+
 const router = Router();
 
 router.get("/providers/by-user/:userId", (req, res) => {
@@ -37,8 +39,6 @@ router.get("/providers/by-user/:userId", (req, res) => {
   const provider = providers.find((p) => p.userId === req.params.userId) || null;
   res.json({ ok: true, provider });
 });
-
-import { getRepos } from "../repositories/factory.js";
 
 router.post("/providers/:id/services", async (req, res) => {
   const { id } = req.params;
@@ -703,16 +703,11 @@ router.get("/providers/search", (req, res) => {
 
   const results = filteredServices.reduce((acc: any[], service) => {
     const provider = providers.find((p) => p.id === service.providerId);
-    if (!provider) return;
-    if (!provider) return
-
- acc;
+    if (!provider) return acc;
     const profile = profiles.find((p) => p.providerId === service.providerId) || ensureProviderProfile(service.providerId);
 
     if (zone && profile.areas && profile.areas.length > 0 && !profile.areas.includes(zone)) {
-      return;
-
- acc;
+      return acc;
     }
 
     let entry = acc.find((item) => item.provider.id === provider.id);

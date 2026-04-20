@@ -27,6 +27,7 @@
     "mercadopago": "^2.2.11",
     "meilisearch": "^0.40.0",
     "multer": "^2.0.2",
+    "pino": "^9.5.0",
     "zod": "^4.1.11"
   },
   "devDependencies": {

@@ -2,7 +2,6 @@ import { Router } from "express";
 import { readJson, writeJson } from "../storage.js";
 import { adminTokenRequired } from "../security/middleware.js";
 import { getRepos } from "../repositories/factory.js";
-import { getRepos } from "../repositories/factory.js";
 
 const router = Router();
 router.get("/admin/metrics", (_req, res) => {
