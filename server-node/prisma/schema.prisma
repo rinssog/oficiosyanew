@@ -19,6 +19,7 @@ model User {
   provider       Provider?
   terms          TermsAcceptance[]
   clientRequests Request[]         @relation("ClientRequests")
+  subscriptions  UserSubscription[]
 }
 
 model Provider {
@@ -302,4 +303,73 @@ model UserSubscription {
   canceledAt DateTime?
   user       User     @relation(fields: [userId], references: [id])
   plan       SubscriptionPlan @relation(fields: [planId], references: [id])
+}
+
+// ─── ESCROW ────────────────────────────────────────────────────────────────
+model EscrowRecord {
+  id            String   @id @default(cuid())
+  requestId     String   @unique
+  providerId    String
+  clientId      String
+  amount        Int      // centavos ARS — monto total retenido
+  commission    Int      // centavos — comision OficiosYa
+  netProvider   Int      // centavos — lo que recibe el prestador
+  currency      String   @default("ARS")
+  status        String   @default("HELD") // HELD|RELEASED|REFUNDED|DISPUTED
+  mpPaymentId   String?
+  heldAt        DateTime @default(now())
+  releasedAt    DateTime?
+  refundedAt    DateTime?
+  autoReleaseAt DateTime? // 24hs después de fin declarado
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+// ─── CHAT MENSAJES ─────────────────────────────────────────────────────────
+model ChatMessage {
+  id         String   @id @default(cuid())
+  requestId  String   // conversación asociada a la solicitud
+  fromId     String   // userId del emisor
+  toId       String   // userId del receptor
+  body       String
+  readAt     DateTime?
+  createdAt  DateTime @default(now())
+}
+
+// ─── CUPONES ───────────────────────────────────────────────────────────────
+model Coupon {
+  id            String   @id @default(cuid())
+  code          String   @unique
+  createdBy     String   // userId del prestador (o "OFICIOSYA" si es de la plataforma)
+  discountPct   Int      // 5-30
+  maxUses       Int      @default(20)
+  usedCount     Int      @default(0)
+  validUntil    DateTime
+  active        Boolean  @default(true)
+  applyTo       String   @default("SERVICE") // SERVICE | SUBSCRIPTION
+  createdAt     DateTime @default(now())
+  uses          CouponUse[]
+}
+
+model CouponUse {
+  id        String   @id @default(cuid())
+  couponId  String
+  userId    String
+  usedAt    DateTime @default(now())
+  coupon    Coupon   @relation(fields: [couponId], references: [id])
+}
+
+// ─── RATINGS ───────────────────────────────────────────────────────────────
+model Rating {
+  id         String   @id @default(cuid())
+  requestId  String   @unique
+  providerId String
+  clientId   String
+  quality    Int      // 1-5
+  punctuality Int     // 1-5
+  communication Int   // 1-5
+  average    Float
+  comment    String?
+  response   String?  // respuesta del prestador
+  createdAt  DateTime @default(now())
 }

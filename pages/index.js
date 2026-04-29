@@ -1,433 +1,180 @@
-import { useEffect, useMemo, useState } from "react";
+import { useState } from "react";
 import Head from "next/head";
 import Link from "next/link";
+import { useRouter } from "next/router";
 import NavBar from "../components/NavBar";
 import Footer from "../components/Footer";
-import styles from "../styles/Home.module.css";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:4000";
+const F = "#0D3B1F", V = "#16A34A", G = "#C9A227", GL = "#F0D875";
 
-const FALLBACK_CATEGORIES = [
-  {
-    name: "Plomería completa",
-    description: "Instalaciones sanitarias, gas y urgencias 24/7",
-    href: "/client/buscar?category=Plomeria",
-    badge: "Urgencias",
-  },
-  {
-    name: "Electricidad segura",
-    description: "Tableros, cableado certificado y mantenimiento",
-    href: "/client/buscar?category=Electricidad",
-    badge: "Matriculados",
-  },
-  {
-    name: "Climatización y calefacción",
-    description: "Instalación y service de AA, calderas y radiadores",
-    href: "/client/buscar?category=Climatizacion",
-  },
-  {
-    name: "Obras y refacciones",
-    description: "Construcción liviana, pintura y arreglos del hogar",
-    href: "/client/buscar?category=Obras",
-  },
-  {
-    name: "Servicios rápidos",
-    description: "Cerrajería, vidrios, limpieza y mantenimiento express",
-    href: "/client/buscar?category=Servicios",
-  },
-  {
-    name: "Gestión administrativa",
-    description: "Consorcios, administración de edificios y seguros",
-    href: "/client/buscar?category=Administracion",
-  },
+function Shield({ size = 52, style = {} }) {
+  const id = `hero-sh`;
+  return (
+    <svg width={size} height={size * 1.18} viewBox="0 0 80 94" fill="none" style={style}>
+      <defs>
+        <linearGradient id={`${id}-fill`} x1="40" y1="4" x2="40" y2="88" gradientUnits="userSpaceOnUse">
+          <stop stopColor="#16A34A" /><stop offset="1" stopColor="#0D3B1F" />
+        </linearGradient>
+        <linearGradient id={`${id}-go`} x1="0" y1="0" x2="80" y2="94" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stopColor="#FAF0B0" /><stop offset="25%" stopColor="#F0D875" />
+          <stop offset="50%" stopColor="#C9A227" /><stop offset="75%" stopColor="#F0D875" />
+          <stop offset="100%" stopColor="#FAF0B0" />
+        </linearGradient>
+        <linearGradient id={`${id}-gi`} x1="80" y1="0" x2="0" y2="94" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stopColor="#FAF0B0" /><stop offset="40%" stopColor="#F0D875" />
+          <stop offset="65%" stopColor="#C9A227" /><stop offset="100%" stopColor="#FAF0B0" />
+        </linearGradient>
+        <filter id={`${id}-shd`}><feDropShadow dx="0" dy="4" stdDeviation="6" floodOpacity="0.3" /></filter>
+      </defs>
+      <path d="M40 1 L78 15 L78 48 C78 70 62 85 40 93 C18 85 2 70 2 48 L2 15 Z" fill={`url(#${id}-go)`} filter={`url(#${id}-shd)`} />
+      <path d="M40 5.5 L74.5 18 L74.5 48 C74.5 68 60 81 40 89 C20 81 5.5 68 5.5 48 L5.5 18 Z" fill="#0D3B1F" opacity="0.55" />
+      <path d="M40 8 L72 20.5 L72 48 C72 66.5 58 79 40 86.5 C22 79 8 66.5 8 48 L8 20.5 Z" fill={`url(#${id}-gi)`} />
+      <path d="M40 12 L68 23.5 L68 48 C68 64.5 55.5 76.5 40 83.5 C24.5 76.5 12 64.5 12 48 L12 23.5 Z" fill={`url(#${id}-fill)`} />
+      <ellipse cx="28" cy="30" rx="9" ry="5" fill="rgba(255,255,255,0.20)" transform="rotate(-25 28 30)" />
+      <text x="40" y="55" textAnchor="middle" dominantBaseline="middle" fill="#FFFFFF" fontSize="24" fontWeight="900"
+        fontFamily="Georgia,'Times New Roman',serif" letterSpacing="-0.5">Ya</text>
+      <path d="M33 83.5 Q40 89 47 83.5" stroke="#F0D875" strokeWidth="1.2" fill="none" opacity="0.6" />
+    </svg>
+  );
+}
+
+const RUBROS = [
+  { name: "Electricista", icon: "⚡", href: "/client/buscar?category=Electricidad" },
+  { name: "Plomero",      icon: "🔧", href: "/client/buscar?category=Plomeria" },
+  { name: "Pintor",       icon: "🖌️", href: "/client/buscar?category=Pintura" },
+  { name: "Gasista",      icon: "🔥", href: "/client/buscar?category=Gas" },
+  { name: "Cerrajero",    icon: "🔑", href: "/client/buscar?category=Cerrajeria" },
+  { name: "Albañil",      icon: "🏗️", href: "/client/buscar?category=Albanileria" },
+  { name: "Carpintero",   icon: "🪚", href: "/client/buscar?category=Carpinteria" },
+  { name: "Técnico AC",   icon: "❄️", href: "/client/buscar?category=Climatizacion" },
 ];
 
-const PROVINCE_ZONES = [
-  { province: "Ciudad de Buenos Aires", focus: "Cobertura total en las 15 comunas" },
-  { province: "GBA Norte", focus: "Vicente López, San Isidro, Tigre y más" },
-  { province: "GBA Oeste", focus: "Tres de Febrero, Morón, Ituzaingó, Hurlingham" },
-  { province: "GBA Sur", focus: "Avellaneda, Lomas, Quilmes, Esteban Echeverría" },
-  { province: "Córdoba", focus: "Capital, Villa Carlos Paz y Sierras Chicas" },
-  { province: "Santa Fe", focus: "Rosario, Santa Fe y corredor industrial" },
-];
-
-const FEATURED_PROVIDERS = [
-  {
-    id: "pro_demo_lucia",
-    name: "Lucia Pereyra",
-    role: "Electricista matriculada",
-    avatar: "/assets/user1.svg",
-    rating: 4.9,
-    reviews: 85,
-    services: ["Tableros domiciliarios", "Bocas de iluminación", "Certificación IRAM"],
-    verified: true,
-    response: "Responde en 18 min",
-  },
-  {
-    id: "pro_demo_ramon",
-    name: "Ramón Ibáñez",
-    role: "Plomero integral",
-    avatar: "/assets/user2.svg",
-    rating: 4.8,
-    reviews: 120,
-    services: ["Destapaciones", "Termotanques", "Urgencias"],
-    verified: true,
-    response: "Urgencias en 35 min",
-  },
-  {
-    id: "pro_demo_javier",
-    name: "Javier Loreti",
-    role: "Carpintero",
-    avatar: "/assets/user3.svg",
-    rating: 4.7,
-    reviews: 58,
-    services: ["Muebles a medida", "Restauraciones", "Decks exteriores"],
-    verified: true,
-    response: "Visita programada en 24 h",
-  },
-];
-
-const CLIENT_PLANS = [
-  {
-    name: "Plan Esencial",
-    price: "$0",
-    summary: "Solicitá prestadores verificados cuando lo necesites.",
-    perks: ["Calendario compartido", "Evaluaciones y reseñas", "Soporte por chat"],
-    accent: styles.planEssential,
-    savings: "Sin costo mensual",
-  },
-  {
-    name: "Plan Plus",
-    price: "$3.200",
-    summary: "Pensado para hogares y oficinas con prioridad de atención.",
-    perks: ["Visita preventiva anual", "Garantía extendida", "Línea de ayuda 7x24"],
-    accent: styles.planPlus,
-    highlight: true,
-    savings: "Ahorro 12% en urgencias",
-  },
-  {
-    name: "Plan Premium",
-    price: "$6.900",
-    summary: "Ideal para consorcios y empresas con múltiples locaciones.",
-    perks: ["Gestor asignado", "Reportes mensuales", "Cobertura multi-propiedad"],
-    accent: styles.planPremium,
-    savings: "Incluye agenda ejecutiva",
-  },
-];
-
-const FAQ_ITEMS = [
-  {
-    question: "¿Dónde puedo consultar los documentos legales completos?",
-    answer:
-      "Revisá Términos y Condiciones, Política de Privacidad y el resto de políticas oficiales en el Centro de ayuda. OficiosYa SAS (CUIT 30-71914721-2) mantiene actualizadas esas versiones.",
-  },
-  {
-    question: "¿Cómo se valida un prestador?",
-    answer:
-      "Revisamos documentación legal, matrícula y antecedentes. Solo publicamos perfiles verificados por el equipo de cumplimiento.",
-  },
-  {
-    question: "¿Los clientes deben registrarse?",
-    answer: "Sí, el registro es obligatorio para reservar turnos, seguir trabajos y calificar prestadores.",
-  },
-  {
-    question: "¿Cómo funciona el pago y la garantía?",
-    answer:
-      "Los pagos se liberan cuando confirmás la conformidad. Si surge un reclamo, nuestra mesa de ayuda intercede y coordina una nueva visita.",
-  },
-  {
-    question: "¿Puedo sumar a mi consorcio o empresa?",
-    answer: "Claro, contamos con onboarding asistido y planes para administrar varias locaciones desde una misma cuenta.",
-  },
-];
-
-const QUICK_FILTERS = [
-  { label: "Urgencias 24/7", href: "/client/buscar?urgencias=true" },
-  { label: "Verificados OficiosYa", href: "/client/buscar?verificados=true" },
-  { label: "Servicios virtuales", href: "/client/buscar?modalidad=virtual" },
-  { label: "Visitas a domicilio", href: "/client/buscar?modalidad=presencial" },
-  { label: "Planes con agenda", href: "/planes" },
+const TRUST = [
+  { icon: "🪪", title: "Identidad verificada", sub: "DNI validado por OficiosYa" },
+  { icon: "🛡️", title: "Pago protegido", sub: "Liberamos el dinero al confirmar" },
+  { icon: "⭐", title: "Reseñas auténticas", sub: "Solo clientes reales califican" },
+  { icon: "📋", title: "Garantía 30 días", sub: "Obligatoria para todos los prestadores" },
 ];
 
 export default function Home() {
-  const [catalog, setCatalog] = useState(FALLBACK_CATEGORIES);
-  const [loadingCatalog, setLoadingCatalog] = useState(true);
-  const [activeFaq, setActiveFaq] = useState(null);
+  const router = useRouter();
+  const [search, setSearch] = useState("");
 
-  useEffect(() => {
-    let cancelled = false;
-    fetch(`${API_BASE}/api/catalog`)
-      .then((res) => res.json())
-      .then((payload) => {
-        if (cancelled) return;
-        if (payload?.ok !== false && Array.isArray(payload?.catalog) && payload.catalog.length > 0) {
-          setCatalog(
-            payload.catalog.map((item) => ({
-              name: item.nombre || item.categoria || "Servicio",
-              description: item.descripcion || item.resumen || "Prestador especializado con documentación vigente",
-              href: `/client/buscar?category=${encodeURIComponent(item.categoria || item.nombre || "")}`,
-              badge: item.permiteUrgencias ? "Urgencias" : undefined,
-            })),
-          );
-        }
-      })
-      .catch(() => undefined)
-      .finally(() => setLoadingCatalog(false));
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  const topCategories = useMemo(() => catalog.slice(0, 6), [catalog]);
-
-  const toggleFaq = (index) => {
-    setActiveFaq((current) => (current === index ? null : index));
+  const handleSearch = (e) => {
+    e.preventDefault();
+    router.push(`/client/buscar?q=${encodeURIComponent(search)}`);
   };
 
   return (
-    <div className={styles.container}>
+    <>
       <Head>
-        <title>OficiosYa | Profesionales verificados para tu hogar y empresa</title>
+        <title>OficiosYa — El profesional que necesitás, ya</title>
+        <meta name="description" content="Plataforma argentina de servicios y oficios. Prestadores verificados, pago protegido, garantía 30 días." />
       </Head>
       <NavBar />
-      <main className={styles.main}>
-        <section className={styles.hero}>
-          <div className={styles.heroCopy}>
-            <span className={styles.badge}>Plataforma integral de oficios y servicios</span>
-            <h1>Registrate y gestioná todos tus prestadores desde un solo lugar</h1>
-            <p className={styles.subtitle}>
-              Ingresá como cliente para solicitar trabajos, coordinar agenda, seguir evidencias y calificar a profesionales
-              con documentación validada por nuestro backoffice.
+      <main>
+        {/* HERO */}
+        <section style={{ background: `linear-gradient(135deg, ${F} 0%, #1A5C35 55%, ${V} 100%)`, padding: "72px 24px 80px", textAlign: "center", position: "relative", overflow: "hidden" }}>
+          <div style={{ position: "absolute", top: -40, right: -40, width: 200, height: 200, borderRadius: "50%", background: "rgba(255,255,255,0.05)" }} />
+          <div style={{ position: "relative", maxWidth: 680, margin: "0 auto" }}>
+            <div style={{ display: "inline-flex", alignItems: "center", gap: 10, background: "rgba(255,255,255,0.12)", borderRadius: 24, padding: "6px 16px", marginBottom: 24, border: "1px solid rgba(255,255,255,0.2)" }}>
+              <Shield size={20} />
+              <span style={{ color: "#BBF7D0", fontSize: 13, fontWeight: 700, letterSpacing: 1 }}>PLATAFORMA ARGENTINA · PRESTADORES VERIFICADOS</span>
+            </div>
+            <h1 style={{ color: "#fff", fontSize: "clamp(32px,6vw,56px)", fontWeight: 900, margin: "0 0 16px", lineHeight: 1.1, fontFamily: "Georgia,'Times New Roman',serif" }}>
+              El profesional que<br />necesitás, <span style={{ color: GL }}>ya.</span>
+            </h1>
+            <p style={{ color: "#BBF7D0", fontSize: 18, margin: "0 0 36px", lineHeight: 1.6 }}>
+              Identidad verificada · Matrícula habilitante · Trabajo garantizado
             </p>
-            <div className={styles.heroActions}>
-              <Link href="/auth/register" className={styles.ctaPrimary}>
-                Crear cuenta
-              </Link>
-              <Link href="/auth/login?role=provider" className={styles.ctaSecondary}>
-                Soy prestador verificado
-              </Link>
-              <Link href="/soporte#validacion-identidad" className={styles.ctaOutline}>
-                Ver cómo verificamos prestadores
-              </Link>
+            <form onSubmit={handleSearch} style={{ display: "flex", gap: 8, background: "#fff", borderRadius: 16, padding: 6, maxWidth: 520, margin: "0 auto 24px", boxShadow: "0 8px 32px rgba(0,0,0,0.25)" }}>
+              <input value={search} onChange={e => setSearch(e.target.value)}
+                placeholder="¿Qué servicio necesitás? (ej: plomero Palermo)"
+                style={{ flex: 1, border: "none", outline: "none", fontSize: 15, padding: "10px 14px", color: "#111", background: "transparent" }} />
+              <button type="submit" style={{ background: `linear-gradient(135deg,${V},${F})`, color: "#fff", border: "none", borderRadius: 10, padding: "10px 22px", fontWeight: 800, cursor: "pointer", fontSize: 14 }}>Buscar</button>
+            </form>
+            <div style={{ display: "flex", gap: 20, justifyContent: "center", flexWrap: "wrap" }}>
+              {["🪪 Identidad verificada", "🛡️ Pago protegido", "⭐ Reseñas reales"].map(t => (
+                <span key={t} style={{ color: "#BBF7D0", fontSize: 13, fontWeight: 600 }}>{t}</span>
+              ))}
             </div>
-            <ul className={styles.heroHighlights}>
-              <li>Documentación y matrículas validadas por humanos</li>
-              <li>Retención operativa del 50 % — sin señas ni letra chica</li>
-              <li>Urgencias 24/7 con tiempos controlados y trazabilidad</li>
-            </ul>
-            <div className={styles.heroTrust}>
-              <span>Backoffice 9–19 hs · Evidencias digitales · Cumplimiento Defensa del Consumidor</span>
-            </div>
-          </div>
-          <div className={styles.heroVisual}>
-            <img src="/assets/hero-illustration.svg" alt="Panel OficiosYa" />
           </div>
         </section>
 
-        <section className={styles.quickFilters}>
-          {QUICK_FILTERS.map((filter) => (
-            <Link key={filter.label} href={filter.href}>
-              {filter.label}
-            </Link>
-          ))}
+        {/* URGENCIAS */}
+        <div style={{ background: "#dc2626", padding: "14px 24px", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12 }}>
+          <span style={{ color: "#fff", fontWeight: 700, fontSize: 15 }}>🚨 Urgencias 24/7 · Cerrajería, gas, agua y más</span>
+          <Link href="/client/buscar?urgente=true">
+            <button style={{ background: "rgba(255,255,255,0.15)", color: "#fff", border: "1px solid rgba(255,255,255,0.3)", borderRadius: 8, padding: "6px 16px", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>Ver urgencias →</button>
+          </Link>
+        </div>
+
+        {/* RUBROS */}
+        <section style={{ padding: "40px 24px", background: "#F7F9F5", borderBottom: "1px solid #D4E0D6" }}>
+          <div style={{ maxWidth: 840, margin: "0 auto" }}>
+            <h2 style={{ textAlign: "center", fontSize: 22, fontWeight: 900, color: F, fontFamily: "Georgia,serif", margin: "0 0 24px" }}>¿Qué servicio necesitás?</h2>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(140px,1fr))", gap: 10 }}>
+              {RUBROS.map(r => (
+                <Link key={r.name} href={r.href} style={{ textDecoration: "none" }}>
+                  <div style={{ background: "#fff", border: "1.5px solid #D4E0D6", borderRadius: 14, padding: "16px 12px", textAlign: "center", cursor: "pointer", transition: "all .2s" }}
+                    onMouseEnter={e => { e.currentTarget.style.borderColor = V; e.currentTarget.style.boxShadow = `0 6px 20px rgba(22,163,74,0.2)`; }}
+                    onMouseLeave={e => { e.currentTarget.style.borderColor = "#D4E0D6"; e.currentTarget.style.boxShadow = "none"; }}>
+                    <div style={{ fontSize: 26, marginBottom: 6 }}>{r.icon}</div>
+                    <div style={{ fontWeight: 700, fontSize: 14, color: F }}>{r.name}</div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
         </section>
 
-        <section className={styles.catalogSection}>
-          <header className={styles.sectionHeader}>
-            <div>
-              <h2>Buscá por rubro</h2>
-              <p>Elegí el servicio que necesitás y recibí presupuestos de prestadores verificados.</p>
-            </div>
-            <Link href="/client/buscar" className={styles.sectionLink}>
-              Ver buscador completo
-            </Link>
-          </header>
-          <div className={styles.catalogGrid}>
-            {(loadingCatalog ? FALLBACK_CATEGORIES : topCategories).map((item) => (
-              <article key={item.name} className={styles.catalogCard}>
-                <div>
-                  {item.badge ? <span className={styles.catalogBadge}>{item.badge}</span> : null}
-                  <strong>{item.name}</strong>
-                  <p>{item.description}</p>
+        {/* TRUST SIGNALS */}
+        <section style={{ padding: "48px 24px", background: "#fff" }}>
+          <div style={{ maxWidth: 840, margin: "0 auto" }}>
+            <h2 style={{ textAlign: "center", fontSize: 22, fontWeight: 900, color: F, fontFamily: "Georgia,serif", margin: "0 0 8px" }}>Por qué elegir OficiosYa</h2>
+            <p style={{ textAlign: "center", color: "#6B7C6E", fontSize: 15, margin: "0 0 32px" }}>Cada prestador pasa por un proceso de verificación antes de aparecer en la plataforma</p>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(180px,1fr))", gap: 16 }}>
+              {TRUST.map(t => (
+                <div key={t.title} style={{ background: "#F0FDF4", border: "1.5px solid rgba(22,163,74,0.3)", borderRadius: 16, padding: "22px 18px", textAlign: "center" }}>
+                  <div style={{ fontSize: 30, marginBottom: 10 }}>{t.icon}</div>
+                  <div style={{ fontWeight: 800, fontSize: 15, color: F, marginBottom: 4 }}>{t.title}</div>
+                  <div style={{ fontSize: 13, color: "#4b5f55", lineHeight: 1.4 }}>{t.sub}</div>
                 </div>
-                <Link href={item.href}>Explorar rubro</Link>
-              </article>
-            ))}
-          </div>
-        </section>
-
-        <section className={styles.trustSection} id="validacion">
-          <div className={styles.trustCopy}>
-            <h2>Verificación documental y seguridad legal</h2>
-            <p>
-              El equipo de OficiosYa valida cada credencial antes de habilitar un perfil. Todas las aceptaciones de términos
-              generan hash, IP y timestamp para auditoría, cumpliendo con la Ley de Defensa del Consumidor.
-            </p>
-            <ul>
-              <li>DNI frente y dorso + antecedentes penales GEDO</li>
-              <li>Matrículas y seguros obligatorios por rubro</li>
-              <li>Retención operativa del 50 % para urgencias (no seña)</li>
-            </ul>
-            <Link href="/soporte#validacion-identidad" className={styles.ctaOutline}>
-              Checklist completo de verificación
-            </Link>
-          </div>
-          <div className={styles.trustCards}>
-            <article>
-              <h3>Backoffice dedicado</h3>
-              <p>Operamos lunes a viernes de 9 a 19 hs y atendemos urgencias críticas fuera de horario.</p>
-            </article>
-            <article>
-              <h3>Agenda auditada</h3>
-              <p>Cancelaciones y reprogramaciones quedan registradas con trazabilidad y notificación automática.</p>
-            </article>
-            <article>
-              <h3>Denuncias y soporte</h3>
-              <p>Canal exclusivo para reportar irregularidades y suspender cuentas de forma preventiva.</p>
-            </article>
-          </div>
-        </section>
-
-        <section className={styles.zonesSection}>
-          <header className={styles.sectionHeader}>
-            <div>
-              <h2>Cobertura federal</h2>
-              <p>Sumamos cuadrillas en las provincias y cordones urbanos con mayor demanda.</p>
+              ))}
             </div>
-          </header>
-          <div className={styles.zonesGrid}>
-            {PROVINCE_ZONES.map((zone) => (
-              <div key={zone.province} className={styles.zoneCard}>
-                <strong>{zone.province}</strong>
-                <span>{zone.focus}</span>
+          </div>
+        </section>
+
+        {/* STATS */}
+        <section style={{ background: F, padding: "40px 24px" }}>
+          <div style={{ maxWidth: 840, margin: "0 auto", display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(160px,1fr))", gap: 20 }}>
+            {[["1.200+","Prestadores"],["8.400+","Clientes"],["3.100+","Trabajos"],["4.9 ★","Rating promedio"]].map(([v, l]) => (
+              <div key={l} style={{ textAlign: "center" }}>
+                <div style={{ fontFamily: "Georgia,serif", fontWeight: 900, fontSize: 34, color: GL }}>{v}</div>
+                <div style={{ color: "#BBF7D0", fontSize: 13, marginTop: 4 }}>{l}</div>
               </div>
             ))}
           </div>
         </section>
 
-        <section className={styles.urgencySection}>
-          <div className={styles.urgencyContent}>
-            <span className={styles.urgencyIcon}>🚨</span>
-            <div>
-              <h3>Asistencia rápida cuando la necesitás</h3>
-              <p>
-                Prestadores con habilitaciones vigentes listos para resolver urgencias domiciliarias, asegurar instalaciones y
-                dejar registro del trabajo.
-              </p>
-            </div>
-            <Link href="/client/urgencias" className={styles.urgencyBtn}>
-              Conocer el servicio
+        {/* CTA PRESTADORES */}
+        <section style={{ padding: "56px 24px", background: "#F7F9F5", textAlign: "center" }}>
+          <Shield size={56} style={{ margin: "0 auto 20px", display: "block" }} />
+          <h2 style={{ fontSize: 28, fontWeight: 900, color: F, fontFamily: "Georgia,serif", margin: "0 0 12px" }}>¿Sos prestador de servicios?</h2>
+          <p style={{ color: "#6B7C6E", fontSize: 16, margin: "0 0 28px", maxWidth: 480, marginLeft: "auto", marginRight: "auto" }}>
+            Registrate, verificá tu identidad y empezá a recibir clientes en tu zona. Planes desde Plan Base hasta Premium.
+          </p>
+          <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
+            <Link href="/auth/registro?role=PROVIDER">
+              <button style={{ background: `linear-gradient(135deg,${V},${F})`, color: "#fff", border: "none", borderRadius: 24, padding: "14px 28px", fontWeight: 800, fontSize: 16, cursor: "pointer", boxShadow: `0 6px 20px rgba(22,163,74,0.35)` }}>Postulá tu oficio →</button>
             </Link>
-          </div>
-        </section>
-
-        <section className={styles.featuredSection}>
-          <header className={styles.sectionHeader}>
-            <div>
-              <h2>Prestadores destacados</h2>
-              <p>Perfiles con documentación completa, agenda activa y métricas de respuesta controladas.</p>
-            </div>
-          </header>
-          <div className={styles.cardsGrid}>
-            {FEATURED_PROVIDERS.map((provider) => (
-              <article key={provider.id} className={styles.providerCard}>
-                <div className={styles.providerHeader}>
-                  <img src={provider.avatar} alt={provider.name} width={56} height={56} />
-                  <div>
-                    <strong>{provider.name}</strong>
-                    <span>{provider.role}</span>
-                    <span className={styles.cardRating}>
-                      Rating {provider.rating.toFixed(1)} ({provider.reviews})
-                    </span>
-                  </div>
-                  {provider.verified ? <span className={styles.verifiedBadge}>Verificado</span> : null}
-                </div>
-                <ul className={styles.serviceList}>
-                  {provider.services.map((service) => (
-                    <li key={service}>{service}</li>
-                  ))}
-                </ul>
-                <div className={styles.providerMeta}>
-                  <span>{provider.response}</span>
-                  <span>Agenda digital</span>
-                </div>
-                <div className={styles.providerActions}>
-                  <Link href={`/providers/${provider.id}`} className={styles.cardPrimary}>
-                    Ver perfil
-                  </Link>
-                  <Link href={`/providers/${provider.id}?tab=evidencias`} className={styles.cardSecondary}>
-                    Evidencias
-                  </Link>
-                </div>
-              </article>
-            ))}
-          </div>
-        </section>
-
-        <section className={styles.plansSection}>
-          <header className={styles.sectionHeader}>
-            <div>
-              <h2>Suscripciones para clientes</h2>
-              <p>Elegí el plan que te permite delegar tareas y recibir soporte a medida.</p>
-            </div>
-            <Link href="/planes" className={styles.sectionLink}>
-              Comparar planes
+            <Link href="/planes">
+              <button style={{ background: "#fff", color: F, border: `2px solid ${F}`, borderRadius: 24, padding: "14px 28px", fontWeight: 700, fontSize: 16, cursor: "pointer" }}>Ver planes y precios</button>
             </Link>
-          </header>
-          <div className={styles.tiersGrid}>
-            {CLIENT_PLANS.map((plan) => (
-              <article
-                key={plan.name}
-                className={`${styles.planCard} ${plan.highlight ? styles.planHighlight : ""} ${plan.accent}`}
-              >
-                <div className={styles.planHeader}>
-                  <h3 className={styles.planName}>{plan.name}</h3>
-                  <p className={styles.planPrice}>
-                    {plan.price} <span>por mes</span>
-                  </p>
-                  {plan.savings ? <span className={styles.planSavings}>{plan.savings}</span> : null}
-                  <p className={styles.planDescription}>{plan.summary}</p>
-                </div>
-                <ul>
-                  {plan.perks.map((perk) => (
-                    <li key={perk}>{perk}</li>
-                  ))}
-                </ul>
-                <Link href="/planes">Solicitar información</Link>
-              </article>
-            ))}
-          </div>
-        </section>
-
-        <section className={styles.faqSection}>
-          <header className={styles.sectionHeader}>
-            <div>
-              <h2>Preguntas frecuentes</h2>
-              <p>Desplegá cada punto para conocer cómo trabajamos y qué esperamos de prestadores y clientes.</p>
-            </div>
-          </header>
-          <div className={styles.faqList}>
-            {FAQ_ITEMS.map((item, index) => {
-              const isOpen = activeFaq === index;
-              return (
-                <div key={item.question} className={`${styles.faqItem} ${isOpen ? styles.faqItemOpen : ""}`}>
-                  <button
-                    type="button"
-                    className={styles.faqQuestion}
-                    onClick={() => toggleFaq(index)}
-                    aria-expanded={isOpen}
-                  >
-                    <span>{item.question}</span>
-                    <span className={styles.faqIcon}>{isOpen ? "-" : "+"}</span>
-                  </button>
-                  {isOpen ? <p className={styles.faqAnswer}>{item.answer}</p> : null}
-                </div>
-              );
-            })}
           </div>
         </section>
       </main>
       <Footer />
-    </div>
+    </>
   );
 }
