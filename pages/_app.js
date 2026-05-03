@@ -3,12 +3,14 @@
  * Wrapper global — envuelve toda la app con AuthProvider
  */
 import { AuthProvider } from "../contexts/AuthContext";
+import InstallBanner from "../components/InstallBanner";
 import "../styles/globals.css";
 
 export default function App({ Component, pageProps }) {
   return (
     <AuthProvider>
       <Component {...pageProps} />
+      <InstallBanner />
     </AuthProvider>
   );
 }
