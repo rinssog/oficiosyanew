@@ -373,3 +373,40 @@ model Rating {
   response   String?  // respuesta del prestador
   createdAt  DateTime @default(now())
 }
+
+// ─── EQUIPO DE TRABAJO DEL PRESTADOR ──────────────────────────────────────
+// Un prestador puede tener múltiples miembros en su equipo
+model TeamMember {
+  id              String   @id @default(cuid())
+  providerId      String
+  userId          String?  // si el miembro tiene cuenta en OficiosYa
+  name            String
+  role            String   // "ayudante", "oficial", "socio", "supervisor"
+  dni             String?
+  phone           String?
+  verified        Boolean  @default(false)
+  verifiedAt      DateTime?
+  active          Boolean  @default(true)
+  canBeAssigned   Boolean  @default(true) // aparece como ejecutor en trabajos
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  provider        Provider @relation(fields: [providerId], references: [id])
+}
+
+// ─── FOTOS DE TRABAJOS (con watermark OficiosYa) ──────────────────────────
+model WorkPhoto {
+  id              String   @id @default(cuid())
+  requestId       String   // solicitud/trabajo al que pertenece
+  providerId      String
+  uploadedBy      String   // userId del prestador
+  phase           String   @default("after") // "before" | "during" | "after"
+  originalUrl     String   // URL de la imagen original sin watermark
+  watermarkedUrl  String?  // URL de la imagen con watermark OficiosYa
+  watermarkStatus String   @default("PENDING") // PENDING | APPLIED | FAILED
+  clientApproved  Boolean  @default(false) // true = cliente confirmó el trabajo
+  approvedAt      DateTime?
+  caption         String?
+  teamMemberId    String?  // quién realizó el trabajo (del equipo)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
