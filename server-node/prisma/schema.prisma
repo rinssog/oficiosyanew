@@ -381,13 +381,17 @@ model TeamMember {
   providerId      String
   userId          String?  // si el miembro tiene cuenta en OficiosYa
   name            String
-  role            String   // "ayudante", "oficial", "socio", "supervisor"
+  roleInTeam      String   @default("ayudante")
+  bio             String?
   dni             String?
   phone           String?
+  matricula       String?
+  photoUrl        String?
   verified        Boolean  @default(false)
+  verifiedBy      String?
   verifiedAt      DateTime?
   active          Boolean  @default(true)
-  canBeAssigned   Boolean  @default(true) // aparece como ejecutor en trabajos
+  canBeAssigned   Boolean  @default(true)
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
   provider        Provider @relation(fields: [providerId], references: [id])
@@ -396,17 +400,21 @@ model TeamMember {
 // ─── FOTOS DE TRABAJOS (con watermark OficiosYa) ──────────────────────────
 model WorkPhoto {
   id              String   @id @default(cuid())
-  requestId       String   // solicitud/trabajo al que pertenece
+  requestId       String
   providerId      String
-  uploadedBy      String   // userId del prestador
-  phase           String   @default("after") // "before" | "during" | "after"
-  originalUrl     String   // URL de la imagen original sin watermark
-  watermarkedUrl  String?  // URL de la imagen con watermark OficiosYa
-  watermarkStatus String   @default("PENDING") // PENDING | APPLIED | FAILED
-  clientApproved  Boolean  @default(false) // true = cliente confirmó el trabajo
+  uploadedBy      String?
+  phase           String   @default("after")
+  path            String   // ruta local del archivo procesado
+  publicUrl       String?  // URL pública para servir la foto
+  originalUrl     String?  // URL de la imagen original (antes del watermark)
+  watermarkedUrl  String?  // alias de publicUrl para compatibilidad
+  watermarkStatus String   @default("APPLIED")
+  hash            String?  // SHA-256 del archivo watermarked (anti-tampering)
+  verified        Boolean  @default(false)  // aprobada por el cliente
+  clientApproved  Boolean  @default(false)
   approvedAt      DateTime?
   caption         String?
-  teamMemberId    String?  // quién realizó el trabajo (del equipo)
+  teamMemberId    String?
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 }
