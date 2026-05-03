@@ -19,12 +19,13 @@ import filesRouter from "./routes/files.js";
 import paymentsRouter from "./routes/payments.js";
 import searchRouter from "./routes/search.js";
 import appointmentsRouter from "./routes/appointments.js";
+import chatRouter from "./routes/chat.js";
+import teamRouter from "./routes/teamMembers.js";
+import photosRouter from "./routes/workPhotos.js";
 import { seedAll, seedInitialUser } from "./services/seeding.js";
 
 import { logger } from "./utils/logger";
 import { requestLogger } from "./observability/logger.js";
-
-
 
 const app = express();
 
@@ -36,7 +37,6 @@ const limiter = rateLimit({
 });
 
 app.use(limiter);
-// CORS estricto por entorno
 const allowed = (process.env.CORS_ORIGINS || "http://localhost:3000")
   .split(",")
   .map((s) => s.trim())
@@ -76,16 +76,17 @@ app.use("/api", filesRouter);
 app.use("/api", paymentsRouter);
 app.use("/api", searchRouter);
 app.use("/api", appointmentsRouter);
+app.use("/api", chatRouter);
+app.use("/api", teamRouter);
+app.use("/api", photosRouter);
 
 app.get("/api/health", (_req, res) => {
   res.json({ ok: true, status: "healthy", timestamp: new Date().toISOString() });
 });
 
-// k8s-style probes
 app.get("/healthz", (_req, res) => res.status(200).send("ok"));
 app.get("/readyz", (_req, res) => res.status(200).send("ready"));
 
-// Prometheus placeholder (instrumentación futura)
 app.get("/metrics", (_req, res) => {
   res.setHeader("Content-Type", "text/plain; version=0.0.4");
   res.send(`# HELP api_up 1 if the API is up\n# TYPE api_up gauge\napi_up 1`);
