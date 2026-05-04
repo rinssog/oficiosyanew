@@ -418,3 +418,27 @@ model WorkPhoto {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 }
+
+// ─── PUSH NOTIFICATIONS ───────────────────────────────────────────────────
+model PushSubscription {
+  id        String   @id @default(cuid())
+  userId    String
+  endpoint  String   @unique
+  keys      Json     // { p256dh, auth }
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ─── VERIFICATION REQUESTS ────────────────────────────────────────────────
+model VerificationRequest {
+  id          String   @id @default(cuid())
+  providerId  String
+  userId      String
+  status      String   @default("PENDING") // PENDING|APPROVED|REJECTED
+  documents   Json     // { dni, matricula, antecedentes, impositiva }
+  reviewedBy  String?
+  reviewedAt  DateTime?
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}

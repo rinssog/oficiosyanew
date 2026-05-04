@@ -22,6 +22,9 @@ import appointmentsRouter from "./routes/appointments.js";
 import chatRouter from "./routes/chat.js";
 import teamRouter from "./routes/teamMembers.js";
 import photosRouter from "./routes/workPhotos.js";
+import ratingsRouter from "./routes/ratings.js";
+import pushRouter from "./routes/pushNotifications.js";
+import adminDashRouter from "./routes/adminDashboard.js";
 import { seedAll, seedInitialUser } from "./services/seeding.js";
 
 import { logger } from "./utils/logger";
@@ -79,6 +82,9 @@ app.use("/api", appointmentsRouter);
 app.use("/api", chatRouter);
 app.use("/api", teamRouter);
 app.use("/api", photosRouter);
+app.use("/api", ratingsRouter);
+app.use("/api", pushRouter);
+app.use("/api", adminDashRouter);
 
 app.get("/api/health", (_req, res) => {
   res.json({ ok: true, status: "healthy", timestamp: new Date().toISOString() });
