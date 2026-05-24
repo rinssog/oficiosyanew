@@ -2,7 +2,7 @@
 FROM node:20-alpine AS build
 WORKDIR /app
 COPY . .
-RUN npm ci
+RUN npm install
 # Generar Prisma client durante el build (no requiere DB en build time)
 RUN npx prisma generate
 RUN npm run build
