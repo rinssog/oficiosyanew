@@ -380,9 +380,9 @@ const catalogSeed: CatalogItem[] = [
   },
   {
     id: "FAM-NIN-001",
-    rubro: "Niñera",
+    rubro: "Niï¿½era",
     subrubro: "Turnos",
-    nombre: "Servicio de niñera 4 horas",
+    nombre: "Servicio de niï¿½era 4 horas",
     categoria: "NINOS_FAMILIA",
     subcategoria: "Nineras",
     etiquetas: ["familia", "ninos"],
@@ -592,6 +592,10 @@ export const seedAll = () => {
   seedCollaboratorStores();
 };
 
+// Pre-computed bcrypt hash for "Master123!" (rounds=12) â€” usado solo en seed inicial.
+// Cambialo inmediatamente despuÃ©s del primer despliegue desde el panel de admin.
+const ADMIN_SEED_HASH = "$2b$12$avgPS2rJvyBUdEJJtyGu8eroxBnVlBp1UtUzc.wIRlY9fMbmM1RyS";
+
 export const seedInitialUser = () => {
   const users = ensureJsonArray<any>("users");
   if (users.length === 0) {
@@ -600,7 +604,7 @@ export const seedInitialUser = () => {
       email: "admin@oficiosya.com",
       name: "OficiosYa Admin",
       role: "ADMIN",
-      passwordHash: "",
+      passwordHash: ADMIN_SEED_HASH,
       createdAt: Date.now(),
     };
     users.push(admin);

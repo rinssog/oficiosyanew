@@ -3,7 +3,7 @@ FROM node:20-alpine AS build
 WORKDIR /app
 COPY . .
 RUN npm ci
-# Generar Prisma client durante el build (no requiere DB)
+# Generar Prisma client durante el build (no requiere DB en build time)
 RUN npx prisma generate
 RUN npm run build
 
@@ -14,6 +14,8 @@ COPY --from=build /app/dist ./dist
 COPY --from=build /app/package.json ./package.json
 COPY --from=build /app/node_modules ./node_modules
 COPY --from=build /app/prisma ./prisma
-COPY ./.env.example ./.env
+# Copiar datos iniciales (JSON seed) — Railway inyecta las env vars, no uses .env
+COPY --from=build /app/data ./data
+# El PORT lo inyecta Railway dinámicamente — no exponer fijo
 EXPOSE 4000
 CMD ["node","dist/index.js"]

@@ -4,7 +4,26 @@
     "email": "admin@oficiosya.com",
     "name": "OficiosYa Admin",
     "role": "ADMIN",
-    "passwordHash": "",
+    "passwordHash": "$2b$12$avgPS2rJvyBUdEJJtyGu8eroxBnVlBp1UtUzc.wIRlY9fMbmM1RyS",
     "createdAt": 1759950270700
+  },
+  {
+    "id": "usr_demo_client",
+    "email": "demo@cliente.com",
+    "name": "Demo Cliente",
+    "role": "CLIENT",
+    "passwordHash": "$2b$12$CRA1vWXF40Md9WLu9TDqXO8ucHcfs9TC3SrEl9LciOn0g4kNhk2zW",
+    "createdAt": 1759950270800,
+    "phone": "+54 9 11 2345-6789",
+    "subscriptionPlan": "eventual"
+  },
+  {
+    "id": "usr_demo_provider",
+    "email": "demo@prestador.com",
+    "name": "Demo Prestador",
+    "role": "PROVIDER",
+    "passwordHash": "$2b$12$19JfSp09.fZPjVzoPiCjoO/UFzAJ.N0VCgzLXu/asYNC3CuUKH9l2",
+    "createdAt": 1759950270900,
+    "phone": "+54 9 11 9876-5432"
   }
 ]
