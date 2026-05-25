@@ -56,6 +56,7 @@ router.post("/requests/:requestId/photos", authRequired, async (req, res) => {
         providerId:      provider.id,
         uploadedBy:      userId!,
         phase:           phase || "after",
+        path:            localPath,
         originalUrl:     localPath,
         watermarkStatus: "PENDING",
         caption,

@@ -43,7 +43,7 @@ router.post("/ratings", authRequired, async (req, res) => {
     // Actualizar rating promedio del prestador
     const allRatings = await prisma.rating.findMany({ where: { providerId } });
     const avgRating = allRatings.reduce((a, r) => a + r.average, 0) / allRatings.length;
-    await prisma.provider.update({
+    await (prisma.provider as any).update({
       where: { id: providerId },
       data: { rating: avgRating, reviewCount: allRatings.length,
         goldLevel: allRatings.length >= 50 && avgRating >= 4.8 },
@@ -61,7 +61,7 @@ router.get("/ratings/provider/:providerId", async (req, res) => {
       where: { providerId: req.params.providerId },
       orderBy: { createdAt: "desc" },
       take: 50,
-      include: { client: { select: { id:true, name:true } } },
+      include: { client: { select: { id:true, name:true } } } as any,
     });
     const avg = ratings.length ? ratings.reduce((a,r)=>a+r.average,0)/ratings.length : 0;
     return res.json({ ok:true, ratings, average: avg.toFixed(1), total: ratings.length });

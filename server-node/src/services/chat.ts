@@ -137,7 +137,7 @@ async function moderateMessage(
   const triggeredRules = triggered.map((r) => r.id);
 
   // Verificar historial: si ya tiene FLAG previa → escalar a SUSPEND
-  const priorFlags = await prisma.chatModerationLog.count({
+  const priorFlags = await (prisma as any).chatModerationLog.count({
     where: { userId: fromId, severity: { in: ["FLAG", "SUSPEND"] }, createdAt: { gte: new Date(Date.now() - 30 * 24 * 3600000) } },
   }).catch(() => 0);
 
@@ -147,7 +147,7 @@ async function moderateMessage(
     severity;
 
   // Guardar log de moderación
-  await prisma.chatModerationLog.create({
+  await (prisma as any).chatModerationLog.create({
     data: {
       id: generateId("mod_"),
       userId: fromId,
@@ -175,7 +175,7 @@ async function moderateMessage(
     const suspendUntil = new Date(Date.now() + 48 * 3600000);
     await prisma.user.update({
       where: { id: fromId },
-      data: { suspendedUntil: suspendUntil, suspensionReason: "Desvío de transacción — T&C Sección 19" },
+      data: { suspendedUntil: suspendUntil, suspensionReason: "Desvío de transacción — T&C Sección 19" } as any,
     }).catch(() => {});
   }
 
@@ -214,7 +214,7 @@ router.post("/chat/:requestId/messages", authRequired, async (req, res) => {
     if (!isParticipant) return res.status(403).json({ ok: false, error: "No sos parte de esta conversación" });
 
     // Verificar si la cuenta está suspendida
-    const user = await prisma.user.findUnique({ where: { id: fromId } });
+    const user = await prisma.user.findUnique({ where: { id: fromId } }) as any;
     if (user?.suspendedUntil && new Date(user.suspendedUntil) > new Date()) {
       return res.status(403).json({
         ok: false,
@@ -311,7 +311,7 @@ router.get("/chat/moderation/logs", authRequired, async (req, res) => {
   if (auth?.role !== "ADMIN") return res.status(403).json({ ok: false, error: "Solo admin" });
 
   try {
-    const logs = await prisma.chatModerationLog.findMany({
+    const logs = await (prisma as any).chatModerationLog.findMany({
       orderBy: { createdAt: "desc" },
       take: 100,
       include: { user: { select: { id: true, name: true, email: true } } },
@@ -330,7 +330,7 @@ router.post("/chat/moderation/:userId/unsuspend", authRequired, async (req, res)
   try {
     await prisma.user.update({
       where: { id: req.params.userId },
-      data: { suspendedUntil: null, suspensionReason: null },
+      data: { suspendedUntil: null, suspensionReason: null } as any,
     });
     res.json({ ok: true, message: "Suspensión levantada" });
   } catch (e: any) {

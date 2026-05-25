@@ -25,7 +25,7 @@ router.get("/providers/:providerId/team", async (req, res) => {
   try {
     const members = await prisma.teamMember.findMany({
       where: { providerId: req.params.providerId, active: true },
-      select: { id:true, name:true, role:true, verified:true, canBeAssigned:true },
+      select: { id:true, name:true, roleInTeam:true, verified:true, canBeAssigned:true } as any,
       orderBy: { createdAt: "asc" },
     });
     return res.json({ ok: true, members });
@@ -46,7 +46,7 @@ router.post("/providers/:providerId/team", authRequired, async (req, res) => {
     const limit = await prisma.teamMember.count({ where: { providerId: req.params.providerId, active: true } });
     if (limit >= 20) return res.status(400).json({ ok: false, error: "Máximo 20 miembros por equipo" });
     const member = await prisma.teamMember.create({
-      data: { providerId: req.params.providerId, name: name.trim(), role: memberRole || "ayudante", dni, phone },
+      data: { providerId: req.params.providerId, name: name.trim(), roleInTeam: memberRole || "ayudante", dni, phone } as any,
     });
     return res.status(201).json({ ok: true, member });
   } catch (e: any) { return res.status(500).json({ ok: false, error: e.message }); }

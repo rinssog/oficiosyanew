@@ -36,7 +36,7 @@ export interface WatermarkResult {
 export async function applyWatermark(job: WatermarkJob): Promise<WatermarkResult> {
   try {
     // 1. Intentar importar sharp (se instala con npm install sharp)
-    const sharp = await import("sharp").then(m => m.default).catch(() => null);
+    const sharp = await import("sharp" as string).then((m: any) => m.default).catch(() => null);
 
     if (!sharp) {
       // Fallback: sin sharp, marcamos como pendiente para procesar después
