@@ -2,6 +2,8 @@
 FROM node:20-alpine AS build
 WORKDIR /app
 COPY . .
+# Bust Docker layer cache when deps change (increment this value)
+ARG CACHEBUST=2026052401
 RUN npm install
 # Generar Prisma client durante el build (no requiere DB en build time)
 RUN npx prisma generate
