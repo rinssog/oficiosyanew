@@ -16,7 +16,17 @@
 import { Router } from "express";
 import { authRequired } from "../security/middleware.js";
 import { PrismaClient } from "@prisma/client";
-import { createCanvas, loadImage, registerFont } from "canvas";
+// canvas is an optional native dependency — graceful degradation when not installed
+let createCanvas: any, loadImage: any, registerFont: any;
+try {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const canvasMod = await import("canvas" as string).catch(() => null);
+  if (canvasMod) {
+    createCanvas = canvasMod.createCanvas;
+    loadImage = canvasMod.loadImage;
+    registerFont = canvasMod.registerFont;
+  }
+} catch { /* canvas not available, watermarking will be skipped */ }
 import * as fs from "fs";
 import * as path from "path";
 import * as crypto from "crypto";

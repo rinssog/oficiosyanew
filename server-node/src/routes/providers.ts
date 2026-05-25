@@ -464,7 +464,7 @@ router.put("/providers/:providerId/availability", async (req, res) => {
   const existing = await sched.listRules(providerId);
   const existingMap = new Map(existing.map((rule: any) => [rule.id, rule]));
   try {
-    const normalized = incoming.map((raw: any) => normalizeAvailabilityRule(providerId, raw, existingMap.get(raw?.id)));
+    const normalized = incoming.map((raw: any) => normalizeAvailabilityRule(providerId, raw, existingMap.get(raw?.id) as any));
     await sched.upsertRules(providerId, normalized);
     res.json({ ok: true, rules: normalized, timezone: DEFAULT_TIMEZONE });
   } catch (err: any) {
@@ -746,8 +746,6 @@ router.get("/providers/:providerId/public", (req, res) => {
 
   res.json({ ok: true, provider, owner, profile, services });
 });
-
-import { getRepos } from "../repositories/factory.js";
 
 router.get("/providers/:providerId/materials", async (req, res) => {
   const repos = getRepos();

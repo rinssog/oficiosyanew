@@ -160,13 +160,15 @@ async function moderateMessage(
   }).catch(() => {});
 
   // Log de auditoría
-  await createAuditEntry({
-    actorId: fromId,
-    action: `CHAT_MODERATION_${effectiveSeverity}`,
-    entity: "ChatMessage",
-    entityId: requestId,
-    payload: { triggeredRules, reasons: triggered.map((r) => r.reason) },
-  }).catch(() => {});
+  try {
+    createAuditEntry({
+      actorId: fromId,
+      action: `CHAT_MODERATION_${effectiveSeverity}`,
+      entity: "ChatMessage",
+      entityId: requestId,
+      data: { triggeredRules, reasons: triggered.map((r) => r.reason) },
+    });
+  } catch { /* audit non-critical */ }
 
   // Ejecutar sanción
   if (effectiveSeverity === "SUSPEND") {

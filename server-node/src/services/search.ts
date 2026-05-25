@@ -14,7 +14,7 @@ function getClient() {
 export async function indexCatalog(items: any[]) {
   const c = getClient();
   if (!c) return;
-  const idx = await c.getIndex('catalog').catch(() => c.createIndex('catalog', { primaryKey: 'id' }));
+  const idx: any = await c.getIndex('catalog').catch(() => c.createIndex('catalog', { primaryKey: 'id' }));
   await idx.updateSettings({ searchableAttributes: ['nombre','rubro','subrubro','sinonimos'], filterableAttributes: ['rubro','subrubro'], synonyms: { 'enchufe':['toma','tomacorriente'], 'canilla':['grifo','griferia'] } });
   await idx.addDocuments(items.map(it => ({ id: it.id, rubro: it.rubro, subrubro: it.subrubro || null, nombre: it.nombre, sinonimos: it.sinonimos || [] })));
 }

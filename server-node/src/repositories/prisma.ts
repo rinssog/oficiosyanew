@@ -92,7 +92,6 @@ export function prismaRepos(): Repos {
         return true;
       },
     },
-    materials: {
     requests: {
       async create(data: any) {
         return prisma.request.create({

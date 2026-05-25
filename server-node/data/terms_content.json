@@ -1,6 +1,62 @@
 {
-  "version": "1.0.0",
-  "title": "Terminos y Condiciones OficiosYa",
-  "content": "Bienvenido a OficiosYa. Este documento establece los terminos y condiciones generales del servicio de intermediacion. Al utilizar la plataforma aceptas estas condiciones.\n\n1. OficiosYa actua como intermediario entre clientes y prestadores.\n2. Cada prestador es responsable por la calidad de su trabajo.\n3. Los clientes aceptan realizar los pagos a traves de la plataforma.",
-  "updatedAt": "2025-09-23T22:34:32.843Z"
+  "version": "2.0.0",
+  "title": "Términos y Condiciones de Uso — OficiosYa",
+  "updatedAt": "2026-05-23T00:00:00.000Z",
+  "sections": [
+    {
+      "id": "intermediacion",
+      "titulo": "1. Naturaleza del Servicio e Intermediación",
+      "contenido": "OficiosYa es un servicio de intermediación digital que conecta a personas que requieren servicios domiciliarios o profesionales ('Clientes') con prestadores de servicios independientes verificados ('Prestadores'). La Plataforma actúa exclusivamente como intermediario tecnológico y NO es empleadora, contratista ni responsable solidaria por la ejecución de los servicios contratados entre Clientes y Prestadores.\n\nOficiosYa no presta servicios de albañilería, electricidad, plomería, ni ningún otro oficio. Los contratos de servicio se celebran directamente entre el Cliente y el Prestador. OficiosYa facilita la búsqueda, contacto, agendamiento y el pago seguro, sin ser parte del contrato de prestación de servicios."
+    },
+    {
+      "id": "aceptacion",
+      "titulo": "2. Aceptación de los Términos",
+      "contenido": "Al registrarse en la Plataforma, contratar o prestar servicios a través de ella, o simplemente navegar por sus páginas, el usuario declara haber leído, comprendido y aceptado la totalidad de estos Términos y Condiciones, así como la Política de Privacidad vigente.\n\nLa aceptación queda registrada con hash SHA-256 del documento, dirección IP, marca de tiempo y nombre del aceptante, con valor legal equivalente a firma electrónica conforme a la Ley 25.506 de Firma Digital de la República Argentina."
+    },
+    {
+      "id": "registro",
+      "titulo": "3. Registro y Cuentas de Usuario",
+      "contenido": "Para operar en la Plataforma es obligatorio crear una cuenta con datos verídicos, actualizados y completos. El usuario es responsable de mantener la confidencialidad de sus credenciales.\n\nEstá prohibido crear cuentas falsas, múltiples cuentas para el mismo usuario o cuentas en nombre de terceros sin autorización expresa. OficiosYa puede suspender o eliminar cuentas que incumplan estos Términos, sin previo aviso y sin obligación de indemnización."
+    },
+    {
+      "id": "verificacion",
+      "titulo": "4. Verificación de Prestadores",
+      "contenido": "Todos los Prestadores deben superar un proceso de verificación antes de aparecer en los resultados de búsqueda. Este proceso incluye:\n\na) Validación de identidad mediante DNI, procesado contra base RENAPER.\nb) Selfie con DNI en tiempo real para verificación facial.\nc) Constancia de inscripción en AFIP (Monotributo o autónomo activo).\nd) Seguro de responsabilidad civil vigente con OficiosYa como beneficiario adicional.\ne) Para rubros regulados (gas, electricidad, climatización, salud): matrícula habilitante vigente emitida por el organismo competente.\n\nLa verificación acredita identidad y habilitación formal pero NO garantiza la calidad de los trabajos. OficiosYa no es responsable por daños ocasionados por Prestadores verificados."
+    },
+    {
+      "id": "escrow",
+      "titulo": "5. Sistema de Pago Protegido (Escrow)",
+      "contenido": "Todos los pagos por servicios contratados a través de la Plataforma se procesan mediante el sistema de pago protegido (escrow). El Cliente abona el total del presupuesto aprobado al momento de confirmar la solicitud.\n\nLos fondos son retenidos por OficiosYa hasta la confirmación de finalización del servicio por parte del Cliente, o transcurridas 24 horas de la fecha de finalización acordada sin que el Cliente haya indicado disconformidad.\n\nLa liberación de fondos al Prestador se produce deduciendo la comisión correspondiente al plan activo (Base: 15%, Profesional: 10%, Empresas: 8%).\n\nOficiosYa no almacena datos de tarjetas. Todos los datos de pago son tratados directamente por MercadoPago conforme a su política PCI DSS."
+    },
+    {
+      "id": "cancelacion",
+      "titulo": "6. Política de Cancelación y Retención Operativa",
+      "contenido": "CANCELACIÓN CON MÁS DE 24 HORAS DE ANTICIPACIÓN: Reintegro del 100% del monto pagado. Sin cargo.\n\nCANCELACIÓN CON MENOS DE 24 HORAS DE ANTICIPACIÓN: Se aplica una retención operativa del 50% del valor del servicio como compensación al Prestador por el turno bloqueado y la pérdida de oportunidad de trabajo. Esta retención NO constituye una seña ni depósito en garantía: es una compensación por lucro cesante causada por la cancelación tardía.\n\nNO PRESENTACIÓN DEL CLIENTE: Se aplica la misma retención operativa del 50%.\n\nNO PRESENTACIÓN DEL PRESTADOR: Reintegro del 100% al Cliente. El Prestador queda sujeto a penalidades incluyendo suspensión temporal de 7 días y descenso en el ranking.\n\nFUERZA MAYOR: OficiosYa evaluará cada caso de forma individual y podrá dispensar total o parcialmente la retención operativa."
+    },
+    {
+      "id": "garantia",
+      "titulo": "7. Garantía de 30 Días",
+      "contenido": "Todo Prestador registrado en OficiosYa está obligado a ofrecer garantía de 30 días corridos sobre el trabajo realizado, contados desde la fecha de finalización confirmada.\n\nLa garantía cubre defectos en la ejecución del trabajo directamente atribuibles al Prestador. No cubre daños causados por uso inadecuado, terceros, fenómenos climáticos, ni modificaciones realizadas por el Cliente después del trabajo.\n\nPara activar la garantía, el Cliente debe reportar el defecto dentro del período de 30 días a través de la Plataforma. El Prestador tiene hasta 72 horas para responder y acordar la corrección."
+    },
+    {
+      "id": "calificaciones",
+      "titulo": "8. Calificaciones y Reseñas",
+      "contenido": "Solo los Clientes que hayan contratado y confirmado la finalización de un servicio pueden calificar al Prestador correspondiente.\n\nLas calificaciones son inapelables. Los Prestadores no pueden solicitar la eliminación de reseñas negativas salvo evidencia de falsedad documentada.\n\nOficiosYa puede eliminar reseñas que contengan insultos, información personal, o que sean claramente falsas o fraudulentas."
+    },
+    {
+      "id": "conducta",
+      "titulo": "9. Conducta Prohibida",
+      "contenido": "Está expresamente prohibido:\n\na) Eludir el sistema de pagos de la Plataforma para cobrar o pagar directamente por servicios obtenidos a través de OficiosYa durante los 12 meses siguientes al primer contacto.\nb) Acosar, amenazar o discriminar a otros usuarios.\nc) Publicar información falsa, engañosa o fraudulenta.\nd) Subir fotos o documentos de terceros sin su consentimiento.\ne) Utilizar la Plataforma para actividades ilegales.\n\nLa infracción puede resultar en suspensión inmediata de la cuenta y, según la gravedad, en la presentación de denuncia penal."
+    },
+    {
+      "id": "responsabilidad",
+      "titulo": "10. Responsabilidad de OficiosYa",
+      "contenido": "OficiosYa no garantiza la disponibilidad ininterrumpida de la Plataforma ni la ausencia de errores técnicos.\n\nOficiosYa no es responsable por los daños causados por los Prestadores durante la ejecución de trabajos, ni por la calidad, seguridad o legalidad de los servicios prestados.\n\nLa responsabilidad máxima de OficiosYa ante cualquier reclamación está limitada al monto de la comisión cobrada en la transacción específica que dio origen al reclamo."
+    },
+    {
+      "id": "jurisdiccion",
+      "titulo": "11. Jurisdicción y Ley Aplicable",
+      "contenido": "Estos Términos y Condiciones se rigen por las leyes de la República Argentina. Para cualquier controversia, las partes se someten a la jurisdicción de los Tribunales Ordinarios de la Ciudad Autónoma de Buenos Aires, con renuncia expresa a cualquier otro fuero que pudiera corresponder.\n\nConsultas legales: legal@oficiosya.com.ar"
+    }
+  ]
 }
