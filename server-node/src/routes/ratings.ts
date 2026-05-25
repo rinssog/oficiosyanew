@@ -57,11 +57,10 @@ router.post("/ratings", authRequired, async (req, res) => {
 router.get("/ratings/provider/:providerId", async (req, res) => {
   const prisma = new PrismaClient();
   try {
-    const ratings = await prisma.rating.findMany({
+    const ratings = await (prisma.rating as any).findMany({
       where: { providerId: req.params.providerId },
       orderBy: { createdAt: "desc" },
       take: 50,
-      include: { client: { select: { id:true, name:true } } } as any,
     });
     const avg = ratings.length ? ratings.reduce((a,r)=>a+r.average,0)/ratings.length : 0;
     return res.json({ ok:true, ratings, average: avg.toFixed(1), total: ratings.length });
