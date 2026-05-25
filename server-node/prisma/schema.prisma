@@ -28,14 +28,19 @@ model Provider {
   user        User               @relation(fields: [userId], references: [id])
   companyName String?
   verified    Boolean            @default(false)
-  documents   Document[]
-  services    ProviderService[]
-  photos      Photo[]
-  requests    Request[]
-  quotes      Quote[]
-  slots       AvailabilitySlot[]
-  createdAt   DateTime           @default(now())
-  updatedAt   DateTime           @updatedAt
+  documents         Document[]
+  services          ProviderService[]
+  photos            Photo[]
+  requests          Request[]
+  quotes            Quote[]
+  slots             AvailabilitySlot[]
+  availabilityRules AvailabilityRule[]
+  blackouts         AvailabilityBlackout[]
+  manualSlots       ManualSlot[]
+  materials         ProviderMaterial[]
+  teamMembers       TeamMember[]
+  createdAt         DateTime               @default(now())
+  updatedAt         DateTime               @updatedAt
 }
 
 model Document {
