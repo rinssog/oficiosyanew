@@ -27,7 +27,7 @@ import pushRouter from "./routes/pushNotifications.js";
 import adminDashRouter from "./routes/adminDashboard.js";
 import { seedAll, seedInitialUser } from "./services/seeding.js";
 
-import { logger } from "./utils/logger";
+import { logger } from "./utils/logger.js";
 import { requestLogger } from "./observability/logger.js";
 
 const app = express();
