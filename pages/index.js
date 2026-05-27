@@ -38,6 +38,40 @@ function Shield({ size = 52, style = {} }) {
   );
 }
 
+const FAQ = [
+  { q: "¿Cómo sé que el prestador es de confianza?", a: "Todos los prestadores pasan por verificación de identidad (DNI validado por RENAPER), constancia de AFIP vigente y, para rubros regulados, matrícula habilitante. Solo aparecen en la plataforma los que aprobaron el proceso completo." },
+  { q: "¿Qué pasa si no quedo conforme con el trabajo?", a: "Tenés 30 días de garantía obligatoria. Si el defecto es atribuible al prestador, debe corregirlo sin costo. Podés abrir un reclamo desde tu panel y OficiosYa interviene como mediador." },
+  { q: "¿Es seguro pagar por la plataforma?", a: "Sí. Usamos pago protegido (escrow): el dinero se retiene hasta que confirmás que el trabajo está bien hecho. Si el prestador no se presenta, te devolvemos el 100%. Los pagos los procesa MercadoPago con encriptación bancaria." },
+  { q: "¿Puedo cancelar una solicitud?", a: "Con más de 24 horas de anticipación, cancelás sin costo. Con menos de 24 horas, se aplica una retención operativa del 50% como compensación al prestador por el turno bloqueado. Esta retención NO es una seña." },
+  { q: "¿OficiosYa garantiza los precios?", a: "Los precios los fija el prestador en su presupuesto. OficiosYa no interviene en la negociación, pero retiene los fondos para que el precio pagado sea exactamente el presupuestado, sin sorpresas." },
+];
+
+function FaqSection() {
+  const [open, setOpen] = useState(null);
+  return (
+    <section style={{ padding: "56px 24px", background: "#F7F9F5" }}>
+      <div style={{ maxWidth: 720, margin: "0 auto" }}>
+        <h2 style={{ textAlign: "center", fontSize: 22, fontWeight: 900, color: F, fontFamily: "Georgia,serif", margin: "0 0 8px" }}>Preguntas frecuentes</h2>
+        <p style={{ textAlign: "center", color: "#6B7C6E", fontSize: 15, margin: "0 0 32px" }}>Todo lo que necesitás saber antes de empezar</p>
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          {FAQ.map((item, i) => (
+            <div key={i} style={{ background: "#fff", border: `1.5px solid ${open === i ? V : "#D4E0D6"}`, borderRadius: 14, overflow: "hidden", transition: "border-color .2s" }}>
+              <button onClick={() => setOpen(open === i ? null : i)}
+                style={{ width: "100%", display: "flex", justifyContent: "space-between", alignItems: "center", padding: "16px 20px", background: "none", border: "none", cursor: "pointer", textAlign: "left", gap: 12 }}>
+                <span style={{ fontWeight: 700, fontSize: 15, color: F, flex: 1 }}>{item.q}</span>
+                <span style={{ color: V, fontSize: 20, fontWeight: 300, flexShrink: 0, transform: open === i ? "rotate(45deg)" : "none", transition: "transform .2s" }}>+</span>
+              </button>
+              {open === i && (
+                <div style={{ padding: "0 20px 18px", fontSize: 14, color: "#374151", lineHeight: 1.7 }}>{item.a}</div>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 const RUBROS = [
   { name: "Electricista", icon: "⚡", href: "/client/buscar?category=Electricidad" },
   { name: "Plomero",      icon: "🔧", href: "/client/buscar?category=Plomeria" },
@@ -101,11 +135,14 @@ export default function Home() {
           </div>
         </section>
 
-        {/* URGENCIAS */}
-        <div style={{ background: "#dc2626", padding: "14px 24px", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12 }}>
-          <span style={{ color: "#fff", fontWeight: 700, fontSize: 15 }}>🚨 Urgencias 24/7 · Cerrajería, gas, agua y más</span>
-          <Link href="/client/buscar?urgente=true">
-            <button style={{ background: "rgba(255,255,255,0.15)", color: "#fff", border: "1px solid rgba(255,255,255,0.3)", borderRadius: 8, padding: "6px 16px", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>Ver urgencias →</button>
+        {/* URGENCIAS + FRANJAS */}
+        <div style={{ background: "#dc2626", padding: "12px 24px", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
+            <span style={{ color: "#fff", fontWeight: 800, fontSize: 15 }}>🚨 Urgencias 24/7</span>
+            <span style={{ color: "rgba(255,255,255,0.75)", fontSize: 12 }}>07-19h: precio base &nbsp;·&nbsp; 19-23h: +20% nocturno &nbsp;·&nbsp; 23-07h: +50% urgencia</span>
+          </div>
+          <Link href="/client/urgencias">
+            <button style={{ background: "rgba(255,255,255,0.15)", color: "#fff", border: "1px solid rgba(255,255,255,0.3)", borderRadius: 8, padding: "6px 16px", fontSize: 13, fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap" }}>Ver urgencias →</button>
           </Link>
         </div>
 
@@ -145,10 +182,38 @@ export default function Home() {
           </div>
         </section>
 
-        {/* STATS */}
+        {/* SUSCRIPCIÓN — sin precios públicos, requiere registro */}
+        <section style={{ padding: "56px 24px", background: `linear-gradient(135deg,${F},#1a5c30)` }}>
+          <div style={{ maxWidth: 720, margin: "0 auto", textAlign: "center" }}>
+            <div style={{ display: "inline-block", background: "rgba(255,255,255,0.15)", borderRadius: 99, padding: "4px 16px", fontSize: 12, fontWeight: 700, color: "#BBF7D0", letterSpacing: 1, marginBottom: 14 }}>
+              EL NETFLIX DE LOS SERVICIOS DEL HOGAR 🇦🇷
+            </div>
+            <h2 style={{ fontSize: "clamp(24px,4vw,36px)", fontWeight: 900, color: "#fff", fontFamily: "Georgia,serif", margin: "0 0 12px" }}>
+              Suscribite y no pagues<br />más mano de obra
+            </h2>
+            <p style={{ color: "#BBF7D0", fontSize: 16, margin: "0 0 28px", lineHeight: 1.6 }}>
+              Planes para clientes y prestadores con mano de obra incluida, comisiones reducidas y acceso prioritario.<br />
+              <strong style={{ color: GL }}>Registrate para ver precios y planes.</strong>
+            </p>
+            <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
+              <Link href="/auth/register?role=CLIENT">
+                <button style={{ background: V, color: "#fff", border: "none", borderRadius: 24, padding: "14px 28px", fontWeight: 800, fontSize: 15, cursor: "pointer" }}>
+                  Ver planes de cliente →
+                </button>
+              </Link>
+              <Link href="/auth/register?role=PROVIDER">
+                <button style={{ background: "rgba(255,255,255,0.15)", color: "#fff", border: "1.5px solid rgba(255,255,255,0.4)", borderRadius: 24, padding: "14px 28px", fontWeight: 700, fontSize: 15, cursor: "pointer" }}>
+                  Planes de prestador
+                </button>
+              </Link>
+            </div>
+          </div>
+        </section>
+
+        {/* STATS — solo métricas de confianza, no de volumen falso */}
         <section style={{ background: F, padding: "40px 24px" }}>
           <div style={{ maxWidth: 840, margin: "0 auto", display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(160px,1fr))", gap: 20 }}>
-            {[["1.200+","Prestadores"],["8.400+","Clientes"],["3.100+","Trabajos"],["4.9 ★","Rating promedio"]].map(([v, l]) => (
+            {[["100%","Prestadores verificados"],["30 días","Garantía obligatoria"],["24/7","Urgencias disponibles"],["Escrow","Pagos protegidos"]].map(([v, l]) => (
               <div key={l} style={{ textAlign: "center" }}>
                 <div style={{ fontFamily: "Georgia,serif", fontWeight: 900, fontSize: 34, color: GL }}>{v}</div>
                 <div style={{ color: "#BBF7D0", fontSize: 13, marginTop: 4 }}>{l}</div>
@@ -156,6 +221,33 @@ export default function Home() {
             ))}
           </div>
         </section>
+
+        {/* COBERTURA */}
+        <section style={{ padding: "48px 24px", background: "#fff" }}>
+          <div style={{ maxWidth: 840, margin: "0 auto" }}>
+            <h2 style={{ textAlign: "center", fontSize: 22, fontWeight: 900, color: F, fontFamily: "Georgia,serif", margin: "0 0 8px" }}>Cobertura en todo el país</h2>
+            <p style={{ textAlign: "center", color: "#6B7C6E", fontSize: 15, margin: "0 0 32px" }}>Prestadores verificados disponibles en las principales zonas de Argentina</p>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(180px,1fr))", gap: 12 }}>
+              {[
+                { zona: "CABA", detail: "46 barrios · urgencias 24/7", icon: "🏙️" },
+                { zona: "GBA Norte", detail: "San Isidro, Vicente López, Tigre", icon: "🌿" },
+                { zona: "GBA Oeste", detail: "Morón, Merlo, La Matanza", icon: "🏘️" },
+                { zona: "GBA Sur", detail: "Quilmes, Avellaneda, Lanús", icon: "🏭" },
+                { zona: "Córdoba", detail: "Capital y zona centro ·  próximo", icon: "🔜" },
+                { zona: "Rosario", detail: "Santa Fe capital · próximo", icon: "🔜" },
+              ].map(z => (
+                <div key={z.zona} style={{ background: "#F7F9F5", border: "1.5px solid #D4E0D6", borderRadius: 14, padding: "16px 14px", textAlign: "center" }}>
+                  <div style={{ fontSize: 24, marginBottom: 6 }}>{z.icon}</div>
+                  <div style={{ fontWeight: 800, fontSize: 14, color: F }}>{z.zona}</div>
+                  <div style={{ fontSize: 12, color: "#6B7C6E", marginTop: 3, lineHeight: 1.4 }}>{z.detail}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* FAQ */}
+        <FaqSection />
 
         {/* CTA PRESTADORES */}
         <section style={{ padding: "56px 24px", background: "#F7F9F5", textAlign: "center" }}>
@@ -165,7 +257,7 @@ export default function Home() {
             Registrate, verificá tu identidad y empezá a recibir clientes en tu zona. Planes desde Plan Base hasta Premium.
           </p>
           <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
-            <Link href="/auth/registro?role=PROVIDER">
+            <Link href="/auth/register?role=PROVIDER">
               <button style={{ background: `linear-gradient(135deg,${V},${F})`, color: "#fff", border: "none", borderRadius: 24, padding: "14px 28px", fontWeight: 800, fontSize: 16, cursor: "pointer", boxShadow: `0 6px 20px rgba(22,163,74,0.35)` }}>Postulá tu oficio →</button>
             </Link>
             <Link href="/planes">

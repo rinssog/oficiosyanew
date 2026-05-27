@@ -4,7 +4,24 @@ import { adminTokenRequired } from "../security/middleware.js";
 import { getRepos } from "../repositories/factory.js";
 
 const router = Router();
-router.get("/admin/metrics", (_req, res) => {
+
+// ─── GET /api/admin/requests ─── lista de solicitudes (JSON storage)
+router.get("/admin/requests", adminTokenRequired, (_req, res) => {
+  const requests = readJson<any[]>("requests", [])
+    .sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    .slice(0, 150);
+  return res.json({ ok: true, requests, total: requests.length });
+});
+
+// ─── GET /api/admin/users-list ─── lista de usuarios (JSON storage fallback)
+router.get("/admin/users-list", adminTokenRequired, (_req, res) => {
+  const users = readJson<any[]>("users", [])
+    .map((u: any) => ({ id: u.id, name: u.name, email: u.email, role: u.role, createdAt: u.createdAt, suspended: u.suspendedUntil }))
+    .sort((a: any, b: any) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
+  return res.json({ ok: true, users, total: users.length });
+});
+
+router.get("/admin/metrics", adminTokenRequired, (_req, res) => {
   const providers = readJson<any[]>("providers", []);
   const requests = readJson<any[]>("requests", []);
   const quotes = readJson<any[]>("quotes", []);

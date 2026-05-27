@@ -137,4 +137,28 @@ router.post("/admin/verificaciones/:logId/approve", authRequired, requireRole("A
   } catch(e: any) { return res.status(500).json({ ok:false, error: e.message }); }
 });
 
+// ─── GET /api/admin/ratings ──────────────────────────────────────────────────
+router.get("/admin/ratings", authRequired, requireRole("ADMIN"), async (req, res) => {
+  const prisma = new PrismaClient();
+  try {
+    const ratings = await (prisma.rating as any).findMany({
+      orderBy: { createdAt: "desc" },
+      take: 100,
+    });
+    return res.json({ ok: true, ratings });
+  } catch(e: any) { return res.status(500).json({ ok: false, error: e.message }); }
+});
+
+// ─── GET /api/admin/solicitudes ──────────────────────────────────────────────
+router.get("/admin/solicitudes", authRequired, requireRole("ADMIN"), async (req, res) => {
+  const prisma = new PrismaClient();
+  try {
+    const requests = await prisma.request.findMany({
+      orderBy: { createdAt: "desc" },
+      take: 100,
+    });
+    return res.json({ ok: true, requests, total: requests.length });
+  } catch(e: any) { return res.status(500).json({ ok: false, error: e.message }); }
+});
+
 export default router;
