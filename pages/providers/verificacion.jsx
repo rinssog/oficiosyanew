@@ -13,10 +13,12 @@ import { useAuth } from "../../contexts/AuthContext";
 const F = "#0D3B1F", V = "#16A34A", G = "#C9A227";
 
 const STEPS = [
-  { id: "dni",       label: "DNI",           icon: "🪪", desc: "Frente y dorso del DNI",         required: true },
-  { id: "matricula", label: "Matrícula",      icon: "📋", desc: "Habilitación profesional (si aplica)", required: false },
-  { id: "antecedentes", label: "Antecedentes", icon: "⚖️", desc: "Certificado de antecedentes penales (RENAPER)", required: true },
-  { id: "impositiva", label: "Situación fiscal", icon: "📊", desc: "Constancia de inscripción AFIP", required: true },
+  { id: "dni",          label: "DNI (frente y dorso)", icon: "🪪", desc: "Foto clara del DNI. El nombre debe coincidir con el de la cuenta.", required: true },
+  { id: "selfie",       label: "Selfie con DNI",        icon: "🤳", desc: "Foto tuya sosteniendo el DNI en tiempo real. Verifica que tu cara sea visible.", required: true },
+  { id: "antecedentes", label: "Antecedentes penales",  icon: "⚖️", desc: "Certificado del Registro Nacional de Reincidencia. Máx. 6 meses de antigüedad.", required: true },
+  { id: "impositiva",   label: "Constancia AFIP",       icon: "📊", desc: "Constancia de inscripción AFIP (Monotributo o Responsable Inscripto activo).", required: true },
+  { id: "matricula",    label: "Matrícula habilitante",  icon: "📋", desc: "Obligatoria para: Gasista (ENARGAS), Electricista (CAP), Médico, Abogado, Contador, Fumigador.", required: false },
+  { id: "seguro",       label: "Seguro de RC",           icon: "🛡️", desc: "Póliza de Responsabilidad Civil vigente con OficiosYa como beneficiario adicional. (Requerido Plan Pro)", required: false },
 ];
 
 function FileUpload({ label, desc, required, onChange, uploaded }) {
@@ -41,7 +43,7 @@ function FileUpload({ label, desc, required, onChange, uploaded }) {
 export default function VerificacionPage() {
   const { user, provider, apiRequest, isReady } = useAuth();
   const router = useRouter();
-  const [files, setFiles] = useState({ dni: null, matricula: null, antecedentes: null, impositiva: null });
+  const [files, setFiles] = useState({ dni: null, selfie: null, antecedentes: null, impositiva: null, matricula: null, seguro: null });
   const [sending, setSending] = useState(false);
   const [success, setSuccess] = useState(false);
   const [err, setErr] = useState(null);
@@ -53,8 +55,8 @@ export default function VerificacionPage() {
   });
 
   const handleSubmit = async () => {
-    if (!files.dni || !files.antecedentes || !files.impositiva) {
-      setErr("Debés cargar al menos DNI, antecedentes y situación fiscal."); return;
+    if (!files.dni || !files.selfie || !files.antecedentes || !files.impositiva) {
+      setErr("Debés cargar al menos DNI, selfie con DNI, antecedentes penales y constancia AFIP."); return;
     }
     setSending(true); setErr(null);
     try {
@@ -142,8 +144,43 @@ export default function VerificacionPage() {
               />
             ))}
 
-            <div style={{ background: "#F0FDF4", border: "1px solid rgba(22,163,74,0.3)", borderRadius: 10, padding: "10px 14px", fontSize: 12, color: "#166534", marginBottom: 20 }}>
-              ℹ️ El certificado de antecedentes penales podés obtenerlo en <strong>argentina.gob.ar/justicia/reincidencia</strong> con tu clave fiscal. No debe tener más de 6 meses de antigüedad.
+            {/* ── Info antecedentes penales ── */}
+            <div style={{ background: "#F0FDF4", border: "1px solid rgba(22,163,74,0.3)", borderRadius: 10, padding: "14px 16px", fontSize: 12, color: "#166534", marginBottom: 20, lineHeight: 1.6 }}>
+              <div style={{ fontWeight: 800, fontSize: 13, marginBottom: 8, color: F }}>📋 Cómo obtener el certificado de antecedentes penales</div>
+              <div style={{ marginBottom: 8 }}>Trámite 100% online desde el sitio del Ministerio de Justicia con tu CUIT/clave fiscal. No debe tener más de 6 meses de antigüedad.</div>
+              <a
+                href="https://www.argentina.gob.ar/justicia/reincidencia/antecedentespenales"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ display: "inline-flex", alignItems: "center", gap: 8, background: V, color: "#fff", borderRadius: 8, padding: "8px 14px", fontWeight: 800, textDecoration: "none", fontSize: 12 }}
+              >
+                🔗 Ir al sitio oficial del Gobierno →
+              </a>
+              <div style={{ marginTop: 10, fontSize: 11, color: "#6B7C6E" }}>
+                Requisitos: DNI vigente · CUIT/clave fiscal · Pago de tasa (si aplica) · Resultado en PDF digital certificado
+              </div>
+            </div>
+
+            {/* ── Rubros con matrícula obligatoria ── */}
+            <div style={{ background: "#FFFBEB", border: "1px solid rgba(201,162,39,0.3)", borderRadius: 10, padding: "14px 16px", fontSize: 12, color: "#92400E", marginBottom: 20 }}>
+              <div style={{ fontWeight: 800, fontSize: 13, marginBottom: 8, color: F }}>⚠️ Rubros que requieren matrícula habilitante</div>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(200px,1fr))", gap: 6 }}>
+                {[
+                  ["🔥","Gasista","Matrícula ENARGAS vigente"],
+                  ["⚡","Electricista","Certificación CAP o jurisdiccional"],
+                  ["❄️","Instalador AA","Técnico habilitado ASHRAE/jurisdicción"],
+                  ["🩺","Enfermero/Kinesiólogo","Matrícula del colegio profesional"],
+                  ["⚖️","Abogado","Matrícula Colegio de Abogados CABA/provincia"],
+                  ["📊","Contador","Matrícula CPCECF/provincial"],
+                  ["🐛","Fumigador","Carnet SENASA vigente"],
+                  ["🔬","Médico domicilio","Matrícula del ministerio de salud"],
+                ].map(([ico,rubro,req]) => (
+                  <div key={rubro} style={{ fontSize: 11, display: "flex", gap: 4, alignItems: "flex-start" }}>
+                    <span>{ico}</span>
+                    <span><strong>{rubro}:</strong> {req}</span>
+                  </div>
+                ))}
+              </div>
             </div>
 
             <button onClick={handleSubmit} disabled={sending} style={{ width: "100%", background: sending ? "#D4E0D6" : `linear-gradient(135deg,${V},${F})`, color: "#fff", border: "none", borderRadius: 24, padding: "14px", fontWeight: 800, fontSize: 15, cursor: sending ? "default" : "pointer" }}>

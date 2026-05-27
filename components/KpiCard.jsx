@@ -1,23 +1,36 @@
-﻿export default function KpiCard({ title, value, helper }) {
+export default function KpiCard({ title, value, helper, icon, trend, color }) {
+  const accent = color || "var(--primary)";
   return (
-    <div
-      style={{
-        background: "#fff",
-        borderRadius: "22px",
-        padding: "22px",
-        border: "1px solid var(--border)",
-        boxShadow: "rgba(22, 101, 52, 0.05) 0 16px 32px",
-        display: "flex",
-        flexDirection: "column",
-        gap: "8px",
-      }}
-    >
-      <span style={{ fontSize: "0.85rem", color: "var(--text-soft)", textTransform: "uppercase", letterSpacing: "0.05em" }}>
-        {title}
-      </span>
-      <strong style={{ fontSize: "2rem", color: "var(--primary-700)" }}>{value}</strong>
-      {helper && <span style={{ color: "var(--text-soft)" }}>{helper}</span>}
+    <div className="kpi-card" style={{ "--kpi-accent": accent }}>
+      <style>{`
+        .kpi-card::before { background: linear-gradient(90deg, var(--kpi-accent, var(--primary)), transparent) !important; }
+      `}</style>
+
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+        <span className="kpi-title">{title}</span>
+        {icon && (
+          <span style={{
+            fontSize: 20, width: 36, height: 36,
+            background: `${accent}15`,
+            borderRadius: "10px",
+            display: "flex", alignItems: "center", justifyContent: "center",
+          }}>
+            {icon}
+          </span>
+        )}
+      </div>
+
+      <strong className="kpi-value" style={{ color: "var(--green-900)" }}>
+        {value}
+      </strong>
+
+      {helper && (
+        <span className="kpi-helper" style={{ display: "flex", alignItems: "center", gap: 4 }}>
+          {trend === "up"   && <span style={{ color: "var(--primary)", fontSize: 12 }}>↑</span>}
+          {trend === "down" && <span style={{ color: "var(--danger)", fontSize: 12 }}>↓</span>}
+          {helper}
+        </span>
+      )}
     </div>
   );
 }
-

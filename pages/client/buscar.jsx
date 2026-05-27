@@ -9,7 +9,17 @@ import { useRouter } from "next/router";
 import NavBar from "../../components/NavBar";
 import Footer from "../../components/Footer";
 import { useAuth } from "../../contexts/AuthContext";
-import { RUBROS_FLAT } from "../../server-node/src/data/rubros";
+import { RUBROS_FLAT } from "../../data/rubros";
+
+// Prestadores demo — se reemplazan con datos reales cuando el backend está conectado
+const MOCK_PROVIDERS = [
+  { id:"p1", companyName:"Ramírez Electricidad", rubro:"Electricista", zone:"Palermo", rating:4.9, reviewCount:87, verified:true, urgent:true, planName:"Pro", priceFrom:8500, bio:"Matriculado CAP 2847. 15 años de experiencia. Tableros, instalaciones y domótica." },
+  { id:"p2", companyName:"Plomería Sánchez Hnos.", rubro:"Plomero", zone:"Belgrano", rating:4.8, reviewCount:124, verified:true, urgent:true, planName:"Pro", priceFrom:7000, bio:"Destapaciones, pérdidas y termotanques. Disponibilidad inmediata en CABA Norte." },
+  { id:"p3", companyName:"García Gas Matriculado", rubro:"Gasista", zone:"Recoleta", rating:5.0, reviewCount:62, verified:true, goldLevel:true, urgent:true, priceFrom:9500, bio:"Gasista habilitado Ecogas. Detección de fugas, certificados para alquiler y calderas." },
+  { id:"p4", companyName:"Pinturas Del Valle", rubro:"Pintor", zone:"Caballito", rating:4.7, reviewCount:211, verified:true, planName:"Base", priceFrom:5500, bio:"Interior y exterior. Presupuesto gratis. Materiales de primera incluidos en el precio." },
+  { id:"p5", companyName:"CerraSeguro 24hs", rubro:"Cerrajero", zone:"CABA", rating:4.9, reviewCount:340, verified:true, urgent:true, goldLevel:true, priceFrom:6000, bio:"Apertura sin daño. Cerraduras de seguridad y smart locks. 24/7 toda CABA." },
+  { id:"p6", companyName:"ClimaTotal HVAC", rubro:"Técnico AA", zone:"San Telmo", rating:4.6, reviewCount:98, verified:true, planName:"Pro", priceFrom:11000, bio:"Instalación y mantenimiento de splits, multisplit y VRF. Técnico certificado." },
+];
 
 const F = "#0D3B1F", V = "#16A34A", G = "#C9A227";
 
@@ -100,9 +110,32 @@ export default function BuscarPage() {
       if (soloVer)  params.set("verified", "true");
       params.set("limit", "20");
       const data = await apiRequest(`/api/providers?${params.toString()}`);
-      setProviders(data.providers || []);
-      setTotal(data.total || 0);
-    } catch { setProviders([]); }
+      const list = data.providers || [];
+      if (list.length === 0) {
+        // Fallback a demo cuando no hay backend o no hay datos
+        const filtered = MOCK_PROVIDERS.filter(p =>
+          (!rubroSel || p.rubro?.toLowerCase().includes(rubroSel)) &&
+          (!soloUrg || p.urgent) &&
+          (!soloVer || p.verified) &&
+          (!search || p.companyName?.toLowerCase().includes(search.toLowerCase()) || p.rubro?.toLowerCase().includes(search.toLowerCase()))
+        );
+        setProviders(filtered);
+        setTotal(filtered.length);
+      } else {
+        setProviders(list);
+        setTotal(data.total || list.length);
+      }
+    } catch {
+      // Sin backend: mostrar prestadores demo
+      const filtered = MOCK_PROVIDERS.filter(p =>
+        (!rubroSel || p.rubro?.toLowerCase().includes(rubroSel)) &&
+        (!soloUrg || p.urgent) &&
+        (!soloVer || p.verified) &&
+        (!search || p.companyName?.toLowerCase().includes(search.toLowerCase()) || p.rubro?.toLowerCase().includes(search.toLowerCase()))
+      );
+      setProviders(filtered);
+      setTotal(filtered.length);
+    }
     finally { setLoading(false); }
   }, [search, rubroSel, zonaSel, soloUrg, soloVer, apiRequest]);
 

@@ -59,4 +59,26 @@ router.get("/client/summary", authRequired, (req, res) => {
   });
 });
 
+// ─── GET /api/client/escrow — pagos en custodia del cliente autenticado
+router.get("/client/escrow", authRequired, (req, res) => {
+  const auth = (req as any).auth ?? {};
+  const clientId: string = auth.sub ?? auth.id ?? "";
+  if (!clientId) return res.status(401).json({ ok: false, error: "No autenticado" });
+
+  const all = readJson<any[]>("escrow", []);
+  const mine = all.filter((e: any) => e.clientId === clientId || e.payerId === clientId);
+  return res.json({ ok: true, escrow: mine });
+});
+
+// ─── GET /api/payments/history — historial de pagos del cliente
+router.get("/payments/history", authRequired, (req, res) => {
+  const auth = (req as any).auth ?? {};
+  const userId: string = auth.sub ?? auth.id ?? "";
+  if (!userId) return res.status(401).json({ ok: false, error: "No autenticado" });
+
+  const all = readJson<any[]>("payments", []);
+  const mine = all.filter((p: any) => p.userId === userId || p.clientId === userId || p.payerId === userId);
+  return res.json({ ok: true, payments: mine });
+});
+
 export default router;

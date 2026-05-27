@@ -1,8 +1,12 @@
 "use client";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import { useRouter } from "next/router";
 import { useAuth } from "../contexts/AuthContext";
 
-// ─── SHIELD SVG con marco dorado + "Ya" centrado ─────────────────────────────
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:4000";
+
+/* ── Shield SVG logo ─────────────────────────────────────────── */
 function Shield({ size = 34 }) {
   const id = `nav-sh-${size}`;
   return (
@@ -36,78 +40,261 @@ function Shield({ size = 34 }) {
   );
 }
 
-const S = {
-  header: {
-    position: "sticky", top: 0, zIndex: 1000,
-    display: "flex", justifyContent: "space-between", alignItems: "center",
-    padding: "0 clamp(16px,4vw,56px)", height: 60,
-    background: "rgba(255,255,255,0.96)", backdropFilter: "blur(14px)",
-    borderBottom: "1px solid #D4E0D6",
-    boxShadow: "0 2px 12px rgba(13,59,31,0.06)",
-  },
-  logo: { display: "flex", alignItems: "center", gap: 10, textDecoration: "none" },
-  logoText: { fontFamily: "Georgia,'Times New Roman',serif", fontWeight: 900, fontSize: 22, color: "#0D3B1F", lineHeight: 1 },
-  nav: { display: "flex", gap: 6, alignItems: "center" },
-  link: { color: "#4b5f55", fontWeight: 500, textDecoration: "none", padding: "6px 12px", borderRadius: 8, fontSize: 14 },
-  btnPrimary: {
-    background: "linear-gradient(135deg,#16A34A,#0D3B1F)", color: "#fff",
-    borderRadius: 24, padding: "8px 18px", border: "none",
-    fontWeight: 700, cursor: "pointer", fontSize: 14,
-    boxShadow: "0 4px 14px rgba(22,163,74,0.35)",
-  },
-  btnSecondary: {
-    background: "rgba(22,163,74,0.1)", color: "#0D3B1F",
-    borderRadius: 24, padding: "8px 18px", border: "1px solid rgba(22,163,74,0.3)",
-    fontWeight: 600, cursor: "pointer", fontSize: 14,
-  },
-  userBadge: {
-    background: "#F0FDF4", border: "1px solid rgba(22,163,74,0.4)", borderRadius: 24,
-    padding: "6px 14px", fontSize: 13, fontWeight: 600, color: "#166534",
-  },
+/* ── Hamburger icon ─────────────────────────────────────────── */
+function HamburgerIcon({ open }) {
+  return (
+    <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+      <style>{`
+        .ham-line { transition: all 0.25s ease; transform-origin: center; }
+      `}</style>
+      {open ? (
+        <>
+          <line className="ham-line" x1="4" y1="4" x2="18" y2="18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+          <line className="ham-line" x1="18" y1="4" x2="4" y2="18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+        </>
+      ) : (
+        <>
+          <line className="ham-line" x1="3" y1="6"  x2="19" y2="6"  stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+          <line className="ham-line" x1="3" y1="11" x2="19" y2="11" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+          <line className="ham-line" x1="3" y1="16" x2="19" y2="16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+        </>
+      )}
+    </svg>
+  );
+}
+
+/* ── Chat icon ──────────────────────────────────────────────── */
+function ChatIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+    </svg>
+  );
+}
+
+/* ── Bell icon ──────────────────────────────────────────────── */
+function BellIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+      <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+    </svg>
+  );
+}
+
+const getDashboard = (role) => {
+  if (role === "PROVIDER") return "/providers/dashboard";
+  if (role === "ADMIN")    return "/admin/dashboard";
+  return "/client/dashboard";
 };
 
 export default function NavBar() {
-  const { user, provider, logout, isReady } = useAuth();
-  const handleLogout = () => { logout(); if (typeof window !== "undefined") window.location.href = "/"; };
+  const { user, logout, isReady } = useAuth();
+  const router = useRouter();
+  const [open, setOpen] = useState(false);
+  const [unread, setUnread] = useState(0);
+  const drawerRef = useRef(null);
+
+  // Close drawer on route change
+  useEffect(() => { setOpen(false); }, [router.pathname]);
+
+  // Close drawer when clicking outside
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e) => {
+      if (drawerRef.current && !drawerRef.current.contains(e.target)) setOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [open]);
+
+  // Poll unread chat messages
+  useEffect(() => {
+    if (!user) return;
+    const fetchUnread = async () => {
+      try {
+        const res = await fetch(`${API_BASE}/api/chat/threads?unread=true`, {
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
+        });
+        const data = await res.json();
+        if (data.ok) setUnread(data.totalUnread || 0);
+      } catch {}
+    };
+    fetchUnread();
+    const interval = setInterval(fetchUnread, 30000);
+    return () => clearInterval(interval);
+  }, [user]);
+
+  const handleLogout = () => {
+    logout();
+    if (typeof window !== "undefined") window.location.href = "/";
+  };
+
+  const dashHref = user ? getDashboard(user.role) : "/auth/login";
+
+  const navLinks = [
+    { href: "/client/buscar", label: "Buscar servicio" },
+    { href: "/planes",        label: "Planes" },
+    { href: "/soporte",       label: "Soporte" },
+  ];
 
   return (
-    <header style={S.header}>
-      <Link href="/" style={S.logo}>
-        <Shield size={36} />
-        <span style={S.logoText}>OficiosYa</span>
-      </Link>
+    <>
+      <header style={{
+        position: "sticky", top: 0, zIndex: 1000,
+        display: "flex", justifyContent: "space-between", alignItems: "center",
+        padding: "0 clamp(12px,4vw,48px)", height: 60,
+        background: "rgba(255,255,255,0.97)",
+        backdropFilter: "blur(16px)",
+        WebkitBackdropFilter: "blur(16px)",
+        borderBottom: "1px solid #D4E0D6",
+        boxShadow: "0 2px 12px rgba(13,59,31,0.06)",
+      }}>
 
-      <nav style={S.nav}>
-        <Link href="/client/buscar" style={S.link}>Buscar servicio</Link>
-        <Link href="/planes" style={S.link}>Planes</Link>
-        <Link href="/soporte" style={S.link}>Soporte</Link>
+        {/* Logo */}
+        <Link href="/" style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none" }}>
+          <Shield size={34} />
+          <span style={{ fontFamily: "Georgia,'Times New Roman',serif", fontWeight: 900, fontSize: 20, color: "#0D3B1F" }}>
+            OficiosYa
+          </span>
+        </Link>
+
+        {/* Desktop nav */}
+        <nav className="navbar-desktop-links">
+          {navLinks.map(l => (
+            <Link key={l.href} href={l.href} style={{
+              color: router.pathname === l.href ? "#0D3B1F" : "#4b5f55",
+              fontWeight: router.pathname === l.href ? 700 : 500,
+              textDecoration: "none", padding: "6px 12px", borderRadius: 8, fontSize: 14,
+              background: router.pathname === l.href ? "rgba(22,163,74,0.08)" : "transparent",
+              transition: "all 0.15s",
+            }}>
+              {l.label}
+            </Link>
+          ))}
+
+          {!isReady ? null : user ? (
+            <>
+              {/* Chat button */}
+              <Link href="/chat" style={{ position: "relative", display: "flex", alignItems: "center" }}>
+                <button className="btn btn-ghost btn-icon" title="Chat">
+                  <ChatIcon />
+                  {unread > 0 && <span className="notif-dot" />}
+                </button>
+              </Link>
+
+              {/* User badge */}
+              <span style={{
+                background: "#F0FDF4", border: "1px solid rgba(22,163,74,0.4)", borderRadius: 24,
+                padding: "6px 14px", fontSize: 13, fontWeight: 600, color: "#166534",
+              }}>
+                {user.role === "PROVIDER" ? "🔧 " : user.role === "ADMIN" ? "⚙️ " : "👤 "}
+                {user.name?.split(" ")[0] || user.email?.split("@")[0]}
+              </span>
+
+              <Link href={dashHref}>
+                <button style={{
+                  background: "rgba(22,163,74,0.10)", color: "#0D3B1F",
+                  borderRadius: 24, padding: "8px 18px", border: "1px solid rgba(22,163,74,0.3)",
+                  fontWeight: 600, cursor: "pointer", fontSize: 14,
+                }}>
+                  {user.role === "PROVIDER" ? "Mi panel" : user.role === "ADMIN" ? "Admin" : "Mis servicios"}
+                </button>
+              </Link>
+
+              <button onClick={handleLogout} style={{
+                background: "transparent", border: "none", color: "#dc2626",
+                cursor: "pointer", padding: "6px 12px", fontSize: 14, fontWeight: 600, borderRadius: 8,
+              }}>
+                Salir
+              </button>
+            </>
+          ) : (
+            <>
+              <Link href="/auth/login">
+                <button style={{
+                  background: "rgba(22,163,74,0.1)", color: "#0D3B1F",
+                  borderRadius: 24, padding: "8px 18px", border: "1px solid rgba(22,163,74,0.3)",
+                  fontWeight: 600, cursor: "pointer", fontSize: 14,
+                }}>
+                  Ingresar
+                </button>
+              </Link>
+              <Link href="/auth/registro">
+                <button style={{
+                  background: "linear-gradient(135deg,#16A34A,#0D3B1F)", color: "#fff",
+                  borderRadius: 24, padding: "8px 18px", border: "none",
+                  fontWeight: 700, cursor: "pointer", fontSize: 14,
+                  boxShadow: "0 4px 14px rgba(22,163,74,0.35)",
+                }}>
+                  Registrarse
+                </button>
+              </Link>
+            </>
+          )}
+        </nav>
+
+        {/* Mobile right: chat + hamburger */}
+        <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+          {user && (
+            <Link href="/chat" style={{ position: "relative", display: "flex" }} className="navbar-menu-btn">
+              <ChatIcon />
+              {unread > 0 && <span className="notif-dot" />}
+            </Link>
+          )}
+          <button
+            className="navbar-menu-btn"
+            onClick={() => setOpen(o => !o)}
+            aria-label="Menú"
+            aria-expanded={open}
+          >
+            <HamburgerIcon open={open} />
+          </button>
+        </div>
+      </header>
+
+      {/* Mobile drawer */}
+      <div ref={drawerRef} className={`navbar-drawer${open ? " open" : ""}`}>
+        {navLinks.map(l => (
+          <Link key={l.href} href={l.href} className={`drawer-link${router.pathname === l.href ? " active" : ""}`}>
+            {l.label}
+          </Link>
+        ))}
+
+        <div style={{ height: 1, background: "#E5E7EB", margin: "4px 0" }} />
 
         {!isReady ? null : user ? (
           <>
-            <span style={S.userBadge}>
+            <div style={{ padding: "8px 16px", fontSize: 13, color: "#6B7C6E", fontWeight: 600 }}>
               {user.role === "PROVIDER" ? "🔧 " : user.role === "ADMIN" ? "⚙️ " : "👤 "}
-              {user.name?.split(" ")[0] || user.email?.split("@")[0]}
-            </span>
-            {user.role === "PROVIDER" && (
-              <Link href="/providers/dashboard"><button style={S.btnSecondary}>Mi panel</button></Link>
+              {user.name || user.email}
+            </div>
+            <Link href={dashHref} className="drawer-link">
+              📊 Mi panel
+            </Link>
+            <Link href="/chat" className="drawer-link">
+              💬 Chat {unread > 0 && <span className="badge badge-red" style={{ marginLeft: 8 }}>{unread}</span>}
+            </Link>
+            {user.role !== "ADMIN" && (
+              <Link href={user.role === "CLIENT" ? "/client/reclamos" : "/client/reclamos"} className="drawer-link">
+                📋 Mis reclamos
+              </Link>
             )}
-            {user.role === "CLIENT" && (
-              <Link href="/client/dashboard"><button style={S.btnSecondary}>Mis solicitudes</button></Link>
-            )}
-            {user.role === "ADMIN" && (
-              <Link href="/admin/dashboard"><button style={S.btnSecondary}>Admin</button></Link>
-            )}
-            <button onClick={handleLogout} style={{ ...S.link, color: "#dc2626" }}>Salir</button>
+            <button
+              onClick={handleLogout}
+              className="drawer-link"
+              style={{ background: "none", border: "none", cursor: "pointer", color: "#DC2626", textAlign: "left" }}
+            >
+              🚪 Cerrar sesión
+            </button>
           </>
         ) : (
           <>
-            <Link href="/auth/login"><button style={S.btnSecondary}>Ingresar</button></Link>
-            <Link href="/auth/registro">
-              <button style={S.btnPrimary}>Postulá tu oficio</button>
-            </Link>
+            <Link href="/auth/login" className="drawer-link">🔐 Ingresar</Link>
+            <Link href="/auth/registro" className="drawer-link">✨ Registrarse</Link>
           </>
         )}
-      </nav>
-    </header>
+      </div>
+    </>
   );
 }

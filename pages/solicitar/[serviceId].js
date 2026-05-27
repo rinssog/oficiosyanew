@@ -172,8 +172,30 @@ export default function RequestServicePage() {
             <section style={{ background: '#fff', borderRadius: 18, border: '1px solid var(--border)', padding: 24, display: 'grid', gap: 12 }}>
               <h1 style={{ margin: 0 }}>Solicitar: {service.catalog?.nombre || 'Servicio'}</h1>
               <p style={{ margin: 0, color: '#555' }}>Prestador: {providerName}</p>
-              <p style={{ margin: 0, color: '#555' }}>Precio pactado: {priceLabel}</p>
+              <p style={{ margin: 0, color: '#555', fontWeight: 700 }}>Precio pactado: {priceLabel}</p>
               <p style={{ margin: 0, color: '#666' }}>{service.notes || 'Sin descripcion adicional.'}</p>
+            </section>
+
+            {/* ── Bloque Seña + Escrow ──────────────────────────────── */}
+            <section style={{ background: '#FFFBEB', border: '1.5px solid rgba(201,162,39,0.4)', borderRadius: 18, padding: 20, display: 'grid', gap: 14 }}>
+              <div style={{ fontWeight: 800, color: '#92400E', fontSize: 15 }}>🔐 Pago protegido — ¿Cómo funciona?</div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(200px,1fr))', gap: 12 }}>
+                {[
+                  { icon: '1️⃣', t: 'Seña 50% autorizada', d: 'Al confirmar, se autoriza el 50% del total (no se debita hasta que el trabajo inicia).' },
+                  { icon: '2️⃣', t: 'El prestador confirma', d: 'El prestador acepta la solicitud y te avisa cuando está en camino.' },
+                  { icon: '3️⃣', t: 'Fotos y confirmación', d: 'Al finalizar, el prestador carga fotos del trabajo. Vos aprobás desde la app.' },
+                  { icon: '4️⃣', t: 'Pago liberado', d: 'Se libera el 100% al prestador menos la comisión de tu plan OficiosYa.' },
+                ].map(s => (
+                  <div key={s.t} style={{ background: '#fff', borderRadius: 12, padding: '12px 14px' }}>
+                    <div style={{ fontSize: 20, marginBottom: 6 }}>{s.icon}</div>
+                    <div style={{ fontWeight: 700, color: '#92400E', fontSize: 13, marginBottom: 4 }}>{s.t}</div>
+                    <div style={{ fontSize: 12, color: '#6B7280', lineHeight: 1.5 }}>{s.d}</div>
+                  </div>
+                ))}
+              </div>
+              <div style={{ fontSize: 12, color: '#92400E', background: 'rgba(201,162,39,0.1)', borderRadius: 8, padding: '8px 12px' }}>
+                ⚠️ <strong>Cancelación tardía:</strong> Si cancelás con menos de 24hs de anticipación, se aplica una retención operativa del 50% del valor como compensación al prestador por el turno bloqueado. Esta retención NO es una seña.
+              </div>
             </section>
 
             <section style={{ background: '#fff', borderRadius: 18, border: '1px solid var(--border)', padding: 24, display: 'grid', gap: 16 }}>
