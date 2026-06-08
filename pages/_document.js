@@ -58,7 +58,12 @@ export default function Document() {
         <link rel="icon" href="/icons/icon-32x32.png" type="image/png" />
         <link rel="icon" href="/icons/icon-16x16.png" type="image/png" />
 
-        {/* ─── FUENTES (system font — sin CDN externo) ──────────────── */}
+        {/* ─── FUENTES Google (preconnect + stylesheet) ────────────── */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" />
+
+        {/* ─── Estilos base críticos ─────────────────────────────────── */}
         <style>{`
           * { -webkit-tap-highlight-color: transparent; -webkit-touch-callout: none; }
           body { touch-action: manipulation; }

@@ -40,6 +40,16 @@ const limiter = rateLimit({
   legacyHeaders: false,
 });
 
+// Stricter limiter for auth endpoints (brute-force protection)
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  skipSuccessfulRequests: true,
+  message: { ok: false, error: "Demasiados intentos. Esperá 15 minutos antes de volver a intentar." },
+});
+
 app.use(limiter);
 const allowed = (process.env.CORS_ORIGINS || "http://localhost:3000")
   .split(",")
@@ -67,6 +77,10 @@ if (!fs.existsSync(uploadsDir)) {
 }
 
 app.use("/uploads", express.static(uploadsDir));
+
+// Apply auth-specific strict limiter before general routing (matches actual route paths)
+app.use("/api/users/login", authLimiter);
+app.use("/api/users/register", authLimiter);
 
 app.use("/api", authRouter);
 app.use("/api", catalogRouter);
