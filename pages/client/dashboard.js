@@ -16,6 +16,8 @@ const navItems = [
   { href: "/client/urgencias",  label: "Urgencias 24/7", badge: "24/7" },
   { href: "/client/contratos",  label: "Contratos y seguros" },
   { href: "/client/facturacion",label: "Pagos y facturas" },
+  { href: "/client/reclamos",   label: "Reclamos" },
+  { href: "/chat",              label: "Chat" },
 ];
 
 const STATUS_LABELS = {

@@ -1,0 +1,19 @@
+User-agent: *
+Allow: /
+
+# Public pages
+Allow: /$
+Allow: /terminos
+Allow: /politica-privacidad
+Allow: /soporte
+Allow: /auth/login
+Allow: /auth/register
+
+# Block private areas
+Disallow: /admin/
+Disallow: /api/
+Disallow: /client/
+Disallow: /providers/
+
+# Sitemap
+Sitemap: https://oficiosya-theta.vercel.app/sitemap.xml

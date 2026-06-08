@@ -104,6 +104,35 @@ export default function Home() {
       <Head>
         <title>OficiosYa — El profesional que necesitás, ya</title>
         <meta name="description" content="Plataforma argentina de servicios y oficios. Prestadores verificados, pago protegido, garantía 30 días." />
+        <meta property="og:title" content="OficiosYa — El profesional que necesitás, ya" />
+        <meta property="og:description" content="Plataforma argentina de servicios y oficios. Prestadores verificados, pago protegido y garantía 30 días." />
+        <meta property="og:url" content="https://oficiosya-theta.vercel.app" />
+        <meta property="og:type" content="website" />
+        <link rel="canonical" href="https://oficiosya-theta.vercel.app" />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "WebApplication",
+            "name": "OficiosYa",
+            "url": "https://oficiosya-theta.vercel.app",
+            "description": "Plataforma argentina de servicios y oficios. Prestadores verificados, pago protegido, garantía 30 días.",
+            "applicationCategory": "BusinessApplication",
+            "operatingSystem": "Web, iOS, Android",
+            "offers": { "@type": "Offer", "price": "0", "priceCurrency": "ARS" },
+            "provider": {
+              "@type": "Organization",
+              "name": "OficiosYa",
+              "url": "https://oficiosya-theta.vercel.app",
+              "contactPoint": {
+                "@type": "ContactPoint",
+                "contactType": "customer service",
+                "email": "atencion@oficiosya.com.ar",
+                "availableLanguage": "Spanish"
+              }
+            }
+          }) }}
+        />
       </Head>
       <NavBar />
       <main>

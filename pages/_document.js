@@ -20,17 +20,8 @@ export default function Document() {
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <meta name="apple-mobile-web-app-title" content="OficiosYa" />
-        {/* Splash screens iOS */}
-        <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
-        <link rel="apple-touch-icon" sizes="152x152" href="/icons/icon-152x152.png" />
-        <link rel="apple-touch-icon" sizes="167x167" href="/icons/icon-167x167.png" />
-        <link rel="apple-touch-icon" sizes="180x180" href="/icons/icon-180x180.png" />
-        {/* Splash screens para distintos iPhone/iPad */}
-        <link rel="apple-touch-startup-image" media="(device-width: 320px)"  href="/splash/splash-640x1136.png" />
-        <link rel="apple-touch-startup-image" media="(device-width: 375px)"  href="/splash/splash-750x1334.png" />
-        <link rel="apple-touch-startup-image" media="(device-width: 414px)"  href="/splash/splash-1242x2208.png" />
-        <link rel="apple-touch-startup-image" media="(device-width: 390px) and (-webkit-device-pixel-ratio: 3)" href="/splash/splash-1170x2532.png" />
-        <link rel="apple-touch-startup-image" media="(device-width: 428px) and (-webkit-device-pixel-ratio: 3)" href="/splash/splash-1284x2778.png" />
+        {/* Apple touch icon — usamos el SVG hasta tener PNGs definitivos */}
+        <link rel="apple-touch-icon" href="/favicon.svg" />
 
         {/* ─── SEO BASE ─────────────────────────────────────────────── */}
         <meta name="description" content="Plataforma argentina de servicios y oficios. Prestadores verificados, pago protegido y garantía de 30 días." />
@@ -54,9 +45,8 @@ export default function Document() {
         <meta name="twitter:image"       content="/og-image.png" />
 
         {/* ─── FAVICON ──────────────────────────────────────────────── */}
-        <link rel="icon" href="/favicon.ico" sizes="any" />
-        <link rel="icon" href="/icons/icon-32x32.png" type="image/png" />
-        <link rel="icon" href="/icons/icon-16x16.png" type="image/png" />
+        <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+        <link rel="icon" href="/favicon.svg" sizes="any" />
 
         {/* ─── FUENTES Google (preconnect + stylesheet) ────────────── */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
