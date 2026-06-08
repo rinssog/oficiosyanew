@@ -39,7 +39,7 @@ export default function Footer() {
         {/* Servicios */}
         <div>
           <div style={{ color: G, fontWeight: 700, marginBottom: 12, fontSize: 14 }}>Servicios</div>
-          {[["Buscar prestador","/client/buscar"],["Urgencias 24/7","/client/buscar?urgente=true"],["Solicitar servicio","/solicitar"],["Planes y precios","/planes"]].map(([t,h])=>(
+          {[["Buscar prestador","/client/buscar"],["Urgencias 24/7","/client/urgencias"],["Cómo funciona","/soporte"],["Planes y precios","/planes"]].map(([t,h])=>(
             <div key={t} style={{ marginBottom: 8 }}><Link href={h} style={{ color: "#9CA3AF", textDecoration: "none" }}>{t}</Link></div>
           ))}
         </div>
@@ -47,7 +47,7 @@ export default function Footer() {
         {/* Prestadores */}
         <div>
           <div style={{ color: G, fontWeight: 700, marginBottom: 12, fontSize: 14 }}>Prestadores</div>
-          {[["Registrarme","/auth/registro?role=PROVIDER"],["Ver planes","/planes"],["Panel de trabajo","/providers/dashboard"],["Verificación","/providers/verificacion"]].map(([t,h])=>(
+          {[["Registrarme","/auth/register?role=PROVIDER"],["Ver planes","/planes"],["Panel de trabajo","/providers/dashboard"],["Verificación","/providers/verificacion"]].map(([t,h])=>(
             <div key={t} style={{ marginBottom: 8 }}><Link href={h} style={{ color: "#9CA3AF", textDecoration: "none" }}>{t}</Link></div>
           ))}
         </div>

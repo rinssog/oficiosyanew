@@ -42,10 +42,16 @@ export default function AdminDashboard() {
 
   const navItems = useMemo(
     () => [
-      { href: "/admin/dashboard", label: "KPI generales" },
-      { href: "/admin/documentacion", label: "Revision de docs", badge: pendingDocs.length ? String(pendingDocs.length) : undefined },
-      { href: "/admin/paginas", label: "CMS y landing" },
-      { href: "/admin/reportes", label: "Reportes y SLA" },
+      { href: "/admin/dashboard",       label: "KPI generales" },
+      { href: "/admin/users",           label: "Usuarios" },
+      { href: "/admin/verificaciones",  label: "Verificaciones", badge: pendingDocs.length ? String(pendingDocs.length) : undefined },
+      { href: "/admin/solicitudes",     label: "Solicitudes" },
+      { href: "/admin/reclamos",        label: "📝 Reclamos" },
+      { href: "/admin/escrow",          label: "Escrow" },
+      { href: "/admin/ratings",         label: "Calificaciones" },
+      { href: "/admin/chat-alerts",     label: "Chat/Alertas" },
+      { href: "/admin/documentacion",   label: "CMS Docs" },
+      { href: "/admin/reportes",        label: "Reportes" },
     ],
     [pendingDocs.length],
   );
