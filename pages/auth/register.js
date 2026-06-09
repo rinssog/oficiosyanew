@@ -74,7 +74,12 @@ export default function RegisterPage() {
     setError(null);
     try {
       const result = await register({ name: form.name, email: form.email, password: form.password, role });
-      router.push(result.redirectTo || "/");
+      const dest = result.user?.role === "PROVIDER"
+        ? "/providers/dashboard"
+        : result.user?.role === "ADMIN"
+        ? "/admin/dashboard"
+        : "/client/dashboard";
+      router.push(dest);
     } catch (err) {
       setError(err.message || "Error al crear la cuenta. Intentá con otro email.");
     } finally {

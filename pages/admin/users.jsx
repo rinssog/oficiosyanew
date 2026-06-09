@@ -10,7 +10,6 @@ import Footer from "../../components/Footer";
 import DashboardShell from "../../components/DashboardShell";
 import { useAuth } from "../../contexts/AuthContext";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:4000";
 const F = "#0D3B1F", V = "#16A34A";
 
 const ADMIN_NAV = [
@@ -30,7 +29,7 @@ const ROLE_COLORS = { ADMIN: "#7C3AED", PROVIDER: "#1D4ED8", CLIENT: "#16A34A" }
 const ROLE_BG    = { ADMIN: "#F5F3FF", PROVIDER: "#EFF6FF", CLIENT: "#F0FDF4" };
 
 export default function AdminUsers() {
-  const { user, token, apiRequest, isReady } = useAuth();
+  const { user, apiRequest, isReady } = useAuth();
   const router = useRouter();
   const [users, setUsers]     = useState([]);
   const [total, setTotal]     = useState(0);

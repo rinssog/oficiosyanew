@@ -65,7 +65,12 @@ export default function LoginPage() {
     setError(null);
     try {
       const result = await login({ email: form.email, password: form.password });
-      router.push(result.redirectTo || "/");
+      const dest = result.user?.role === "PROVIDER"
+        ? "/providers/dashboard"
+        : result.user?.role === "ADMIN"
+        ? "/admin/dashboard"
+        : "/client/dashboard";
+      router.push(dest);
     } catch (err) {
       setError(err.message || "Credenciales incorrectas. Verificá tu email y contraseña.");
     } finally {

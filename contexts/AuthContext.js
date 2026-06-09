@@ -72,6 +72,8 @@ export function AuthProvider({ children }) {
         method: 'POST',
         body: JSON.stringify(payload),
       });
+      // Auto-login after successful registration
+      setState({ user: data.user, provider: data.provider ?? null, token: data.token });
       return data;
     },
     async login(payload) {
