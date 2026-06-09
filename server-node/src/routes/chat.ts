@@ -169,13 +169,13 @@ router.post("/chat/threads/:id/messages", authRequired, async (req, res) => {
   let moderated = false;
   let moderationNote: string | undefined;
   try {
-    const modResult = await moderateMessage(userId, thread.requestId, body);
-    if (modResult?.blocked) {
-      return res.status(400).json({ ok: false, error: "Mensaje bloqueado por el sistema de moderación", reason: modResult.reason });
+    const modResult = moderateMessage(body);
+    if (!modResult.allowed) {
+      return res.status(400).json({ ok: false, error: "Mensaje bloqueado por el sistema de moderación", reason: modResult.warningMessage });
     }
-    if (modResult?.flagged) {
+    if (modResult.riskLevel !== "NONE") {
       moderated = true;
-      moderationNote = modResult.reason;
+      moderationNote = modResult.warningMessage;
     }
   } catch {}
 
@@ -326,27 +326,32 @@ router.post("/chat/:requestId", authRequired, async (req, res) => {
   }
 
   let moderated = false;
+  let moderationNote2: string | undefined;
   try {
-    const modResult = await moderateMessage(userId, thread.requestId, body);
-    if (modResult?.blocked) {
-      return res.status(400).json({ ok: false, error: "Mensaje bloqueado por moderación", reason: modResult.reason });
+    const modResult = moderateMessage(body);
+    if (!modResult.allowed) {
+      return res.status(400).json({ ok: false, error: "Mensaje bloqueado por moderación", reason: modResult.warningMessage });
     }
-    if (modResult?.flagged) moderated = true;
+    if (modResult.riskLevel !== "NONE") {
+      moderated = true;
+      moderationNote2 = modResult.warningMessage;
+    }
   } catch {}
 
   const users = readJson<any[]>("users", []);
   const sender = users.find((u: any) => u.id === userId);
 
   const message: ChatMessage = {
-    id:         randomUUID(),
-    threadId:   thread.id,
-    senderId:   userId,
-    senderRole: role as any,
-    senderName: sender?.name || sender?.email || "Usuario",
-    body:       body.trim(),
-    createdAt:  new Date().toISOString(),
-    read:       false,
+    id:            randomUUID(),
+    threadId:      thread.id,
+    senderId:      userId,
+    senderRole:    role as any,
+    senderName:    sender?.name || sender?.email || "Usuario",
+    body:          body.trim(),
+    createdAt:     new Date().toISOString(),
+    read:          false,
     moderated,
+    moderationNote: moderationNote2,
   };
 
   const messages = getMessages();
