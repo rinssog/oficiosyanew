@@ -1,0 +1,58 @@
+[
+  {
+    "providerId": "pro_demo_001",
+    "areas": ["Palermo", "Recoleta", "Belgrano"],
+    "verificationStatus": "APPROVED",
+    "bio": "Empresa de servicios generales del hogar.",
+    "documents": [],
+    "createdAt": 1759950270900
+  },
+  {
+    "providerId": "pro_plo_001",
+    "areas": ["Palermo", "Recoleta", "Belgrano", "Colegiales", "Villa Crespo"],
+    "verificationStatus": "APPROVED",
+    "bio": "Plomero matriculado CABA",
+    "documents": [],
+    "createdAt": 1781024266031
+  },
+  {
+    "providerId": "pro_elec_001",
+    "areas": ["Belgrano", "Núñez", "Saavedra", "Coghlan", "Palermo", "Colegiales"],
+    "verificationStatus": "APPROVED",
+    "bio": "Electricista matriculado MEA",
+    "documents": [],
+    "createdAt": 1781024266031
+  },
+  {
+    "providerId": "pro_gas_001",
+    "areas": ["Microcentro", "San Nicolás", "Retiro", "Recoleta", "Barrio Norte", "Palermo"],
+    "verificationStatus": "APPROVED",
+    "bio": "Gasista ENARGAS matriculado",
+    "documents": [],
+    "createdAt": 1781024266031
+  },
+  {
+    "providerId": "pro_cerr_001",
+    "areas": ["Palermo", "Recoleta", "Belgrano", "Microcentro", "San Telmo", "Caballito", "Flores", "Villa Crespo", "Almagro", "Balvanera"],
+    "verificationStatus": "APPROVED",
+    "bio": "Cerrajería 24hs toda CABA",
+    "documents": [],
+    "createdAt": 1781024266031
+  },
+  {
+    "providerId": "pro_pin_001",
+    "areas": ["Palermo", "Villa Crespo", "Almagro", "Caballito", "Flores"],
+    "verificationStatus": "PENDING",
+    "bio": "Pintor profesional zona oeste y centro",
+    "documents": [],
+    "createdAt": 1781024266031
+  },
+  {
+    "providerId": "pro_carp_001",
+    "areas": ["Tigre", "San Isidro", "Vicente López", "Olivos", "Palermo", "Belgrano"],
+    "verificationStatus": "APPROVED",
+    "bio": "Carpintería y ebanistería GBA Norte y CABA",
+    "documents": [],
+    "createdAt": 1781024266031
+  }
+]

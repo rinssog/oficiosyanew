@@ -25,5 +25,77 @@
     "passwordHash": "$2b$12$19JfSp09.fZPjVzoPiCjoO/UFzAJ.N0VCgzLXu/asYNC3CuUKH9l2",
     "createdAt": 1759950270900,
     "phone": "+54 9 11 9876-5432"
+  },
+  {
+    "id": "usr_plo_001",
+    "email": "martin.rodriguez@demo.com",
+    "name": "Martín Rodríguez",
+    "role": "PROVIDER",
+    "passwordHash": "$2b$10$1hxJRfrbsX3MHhYGyYqNw.idN1/solAaQXVoc59sZQloHwWFr7eJ6",
+    "createdAt": 1781024266031,
+    "phone": "+54 9 11 5544-1122"
+  },
+  {
+    "id": "usr_elec_001",
+    "email": "carlos.fernandez@demo.com",
+    "name": "Carlos Fernández",
+    "role": "PROVIDER",
+    "passwordHash": "$2b$10$1hxJRfrbsX3MHhYGyYqNw.idN1/solAaQXVoc59sZQloHwWFr7eJ6",
+    "createdAt": 1781024266031,
+    "phone": "+54 9 11 5544-2233"
+  },
+  {
+    "id": "usr_gas_001",
+    "email": "roberto.gonzalez@demo.com",
+    "name": "Roberto González",
+    "role": "PROVIDER",
+    "passwordHash": "$2b$10$1hxJRfrbsX3MHhYGyYqNw.idN1/solAaQXVoc59sZQloHwWFr7eJ6",
+    "createdAt": 1781024266031,
+    "phone": "+54 9 11 5544-3344"
+  },
+  {
+    "id": "usr_cerr_001",
+    "email": "diego.lopez@demo.com",
+    "name": "Diego López",
+    "role": "PROVIDER",
+    "passwordHash": "$2b$10$1hxJRfrbsX3MHhYGyYqNw.idN1/solAaQXVoc59sZQloHwWFr7eJ6",
+    "createdAt": 1781024266031,
+    "phone": "+54 9 11 5544-4455"
+  },
+  {
+    "id": "usr_pin_001",
+    "email": "pablo.martinez@demo.com",
+    "name": "Pablo Martínez",
+    "role": "PROVIDER",
+    "passwordHash": "$2b$10$1hxJRfrbsX3MHhYGyYqNw.idN1/solAaQXVoc59sZQloHwWFr7eJ6",
+    "createdAt": 1781024266031,
+    "phone": "+54 9 11 5544-5566"
+  },
+  {
+    "id": "usr_carp_001",
+    "email": "lucas.garcia@demo.com",
+    "name": "Lucas García",
+    "role": "PROVIDER",
+    "passwordHash": "$2b$10$1hxJRfrbsX3MHhYGyYqNw.idN1/solAaQXVoc59sZQloHwWFr7eJ6",
+    "createdAt": 1781024266031,
+    "phone": "+54 9 11 5544-6677"
+  },
+  {
+    "id": "usr_client_2",
+    "email": "ana.gomez@demo.com",
+    "name": "Ana Gómez",
+    "role": "CLIENT",
+    "passwordHash": "$2b$10$1hxJRfrbsX3MHhYGyYqNw.idN1/solAaQXVoc59sZQloHwWFr7eJ6",
+    "createdAt": 1781024266031,
+    "phone": "+54 9 11 4433-1122"
+  },
+  {
+    "id": "usr_client_3",
+    "email": "jorge.perez@demo.com",
+    "name": "Jorge Pérez",
+    "role": "CLIENT",
+    "passwordHash": "$2b$10$1hxJRfrbsX3MHhYGyYqNw.idN1/solAaQXVoc59sZQloHwWFr7eJ6",
+    "createdAt": 1781024266031,
+    "phone": "+54 9 11 4433-2233"
   }
 ]

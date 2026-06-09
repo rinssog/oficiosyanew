@@ -280,16 +280,4 @@ router.post("/users/:userId/subscriptions", authRequired, async (req, res) => {
   return res.status(201).json({ ok: true, subscription: newSub });
 });
 
-// ─── GET /api/plans — planes públicos (usados por checkout + landing) ──────────
-const DEFAULT_PLANS = [
-  { id: "free", name: "Gratis", priceMonthly: 0, commissionPct: 0.20, leadFee: 700 },
-  { id: "pro", name: "Pro", priceMonthly: 8990, commissionPct: 0.15, leadFee: 350 },
-  { id: "elite", name: "Elite", priceMonthly: 19990, commissionPct: 0.10, leadFee: 0 },
-];
-router.get("/plans", (_req, res) => {
-  const stored = readJson<any[]>("subscription_plans", []);
-  const plans = stored.length > 0 ? stored : DEFAULT_PLANS;
-  return res.json({ ok: true, plans });
-});
-
 export default router;

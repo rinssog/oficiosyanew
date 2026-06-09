@@ -28,7 +28,7 @@ import adminDashRouter from "./routes/adminDashboard.js";
 import claimsRouter from "./routes/claims.js";
 import privacyRouter from "./routes/privacy.js";
 import supportRouter from "./routes/support.js";
-import { seedAll, seedInitialUser } from "./services/seeding.js";
+import { seedAll, seedInitialUser, seedDemoData } from "./services/seeding.js";
 
 import { logger } from "./utils/logger.js";
 import { requestLogger } from "./observability/logger.js";
@@ -136,5 +136,6 @@ const PORT = Number(process.env.PORT) || 4000;
 app.listen(PORT, () => {
   seedAll();
   seedInitialUser();
+  seedDemoData().catch((e) => logger.warn("seedDemoData error", { error: String(e) }));
   logger.info(`API lista en http://localhost:${PORT}`);
 });

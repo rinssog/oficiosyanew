@@ -1,3 +1,4 @@
+import bcrypt from "bcryptjs";
 import { CatalogItem } from "../types.js";
 import { generateId, readJson, writeJson } from "../storage.js";
 import { ensureJsonArray } from "../utils/persistence.js";
@@ -579,6 +580,105 @@ const seedCollaboratorStores = () => {
   ensureJsonArray("collaborator_profiles");
   ensureJsonArray("collaborator_terms");
   ensureJsonArray("collaborator_metrics");
+};
+
+// ─── Demo data seed — 6 prestadores reales para que el buscador funcione ─────
+// Solo se ejecuta si provider_services.json está vacío. Password: Demo123!
+// Hash pre-computado con bcrypt rounds=10 para "Demo123!"
+// Unused placeholder — real hash computed at runtime below
+const _DEMO_HASH_UNUSED = "";
+
+export const seedDemoData = async () => {
+  const services = readJson<any[]>("provider_services", []);
+  if (services.length > 0) return; // ya sembrado
+
+  // Computar hash al vuelo (solo una vez, al primer boot)
+  const demoHash = await bcrypt.hash("Demo123!", 10);
+  const now = Date.now();
+
+  // ── Usuarios demo ──────────────────────────────────────────────────────────
+  const usersArr = readJson<any[]>("users", []);
+
+  const demoUsers = [
+    { id: "usr_plo_001",  email: "martin.rodriguez@demo.com",  name: "Martín Rodríguez",   role: "PROVIDER", passwordHash: demoHash, createdAt: now, phone: "+54 9 11 5544-1122" },
+    { id: "usr_elec_001", email: "carlos.fernandez@demo.com",  name: "Carlos Fernández",   role: "PROVIDER", passwordHash: demoHash, createdAt: now, phone: "+54 9 11 5544-2233" },
+    { id: "usr_gas_001",  email: "roberto.gonzalez@demo.com",  name: "Roberto González",   role: "PROVIDER", passwordHash: demoHash, createdAt: now, phone: "+54 9 11 5544-3344" },
+    { id: "usr_cerr_001", email: "diego.lopez@demo.com",       name: "Diego López",        role: "PROVIDER", passwordHash: demoHash, createdAt: now, phone: "+54 9 11 5544-4455" },
+    { id: "usr_pin_001",  email: "pablo.martinez@demo.com",    name: "Pablo Martínez",     role: "PROVIDER", passwordHash: demoHash, createdAt: now, phone: "+54 9 11 5544-5566" },
+    { id: "usr_carp_001", email: "lucas.garcia@demo.com",      name: "Lucas García",       role: "PROVIDER", passwordHash: demoHash, createdAt: now, phone: "+54 9 11 5544-6677" },
+    { id: "usr_client_2", email: "ana.gomez@demo.com",         name: "Ana Gómez",          role: "CLIENT",   passwordHash: demoHash, createdAt: now, phone: "+54 9 11 4433-1122" },
+    { id: "usr_client_3", email: "jorge.perez@demo.com",       name: "Jorge Pérez",        role: "CLIENT",   passwordHash: demoHash, createdAt: now, phone: "+54 9 11 4433-2233" },
+  ];
+
+  const existingIds = new Set(usersArr.map((u: any) => u.id));
+  demoUsers.forEach(u => { if (!existingIds.has(u.id)) usersArr.push(u); });
+  writeJson("users", usersArr);
+
+  // ── Prestadores ────────────────────────────────────────────────────────────
+  const providersArr = readJson<any[]>("providers", []);
+  const existingProvIds = new Set(providersArr.map((p: any) => p.id));
+
+  const demoProviders = [
+    { id: "pro_plo_001",  userId: "usr_plo_001",  companyName: "Rodríguez Plomería",      verified: true,  bio: "Plomero matriculado con 15 años de experiencia en CABA. Destapaciones, instalaciones y reparaciones.",  categories: ["Plomería"], rating: 4.8, reviewCount: 47, plan: "plan_pro",     createdAt: now, updatedAt: now, goldLevel: false },
+    { id: "pro_elec_001", userId: "usr_elec_001", companyName: "Fernández Electricidad",  verified: true,  bio: "Electricista matriculado M.E.A. Instalaciones trifásicas, tableros, iluminación LED y urgencias 24hs.", categories: ["Electricidad"], rating: 4.9, reviewCount: 83, plan: "plan_pro",     createdAt: now, updatedAt: now, goldLevel: false },
+    { id: "pro_gas_001",  userId: "usr_gas_001",  companyName: "González Gas ENARGAS",    verified: true,  bio: "Gasista matriculado ENARGAS GN-54123. Instalaciones de gas, calefones, termotanques y fugas.",          categories: ["Gasista"], rating: 4.7, reviewCount: 31, plan: "plan_base",    createdAt: now, updatedAt: now, goldLevel: false },
+    { id: "pro_cerr_001", userId: "usr_cerr_001", companyName: "López Cerrajería 24hs",   verified: true,  bio: "Cerrajero con apertura sin daños. Cambio de bombines, cajas fuertes y puertas blindadas. Disponible 24/7.", categories: ["Cerrajería"], rating: 4.9, reviewCount: 124, plan: "plan_empresas", createdAt: now, updatedAt: now, goldLevel: true },
+    { id: "pro_pin_001",  userId: "usr_pin_001",  companyName: "Martínez Pinturas",       verified: false, bio: "Pintor profesional. Interiores, exteriores y frentes de edificios. Trabajo prolijo y puntual.",          categories: ["Pintura"], rating: 4.5, reviewCount: 18, plan: "plan_base",    createdAt: now, updatedAt: now, goldLevel: false },
+    { id: "pro_carp_001", userId: "usr_carp_001", companyName: "García Carpintería",      verified: true,  bio: "Carpintero y ebanista. Muebles a medida, reparación de pisos y molduras. Atiendo GBA Norte y CABA.",    categories: ["Carpintería"], rating: 4.6, reviewCount: 22, plan: "plan_base",    createdAt: now, updatedAt: now, goldLevel: false },
+  ];
+
+  demoProviders.forEach(p => { if (!existingProvIds.has(p.id)) providersArr.push(p); });
+  writeJson("providers", providersArr);
+
+  // ── Perfiles (áreas de cobertura) ──────────────────────────────────────────
+  const profilesArr = readJson<any[]>("provider_profiles", []);
+  const existingProfIds = new Set(profilesArr.map((p: any) => p.providerId));
+
+  const demoProfiles = [
+    { providerId: "pro_plo_001",  areas: ["Palermo", "Recoleta", "Belgrano", "Colegiales"], verificationStatus: "APPROVED", bio: "Plomero matriculado CABA", documents: [], createdAt: now },
+    { providerId: "pro_elec_001", areas: ["Belgrano", "Núñez", "Saavedra", "Coghlan", "Palermo"], verificationStatus: "APPROVED", bio: "Electricista matriculado", documents: [], createdAt: now },
+    { providerId: "pro_gas_001",  areas: ["Microcentro", "San Nicolás", "Retiro", "Recoleta", "Barrio Norte"], verificationStatus: "APPROVED", bio: "Gasista ENARGAS", documents: [], createdAt: now },
+    { providerId: "pro_cerr_001", areas: ["Palermo", "Recoleta", "Belgrano", "Microcentro", "San Telmo", "Caballito", "Flores", "Villa Crespo"], verificationStatus: "APPROVED", bio: "Cerrajería 24hs CABA", documents: [], createdAt: now },
+    { providerId: "pro_pin_001",  areas: ["Palermo", "Villa Crespo", "Almagro", "Caballito"], verificationStatus: "PENDING", bio: "Pintor profesional", documents: [], createdAt: now },
+    { providerId: "pro_carp_001", areas: ["Tigre", "San Isidro", "Vicente López", "Palermo"], verificationStatus: "APPROVED", bio: "Carpintería y ebanistería", documents: [], createdAt: now },
+  ];
+
+  demoProfiles.forEach(p => { if (!existingProfIds.has(p.providerId)) profilesArr.push(p); });
+  writeJson("provider_profiles", profilesArr);
+
+  // ── Servicios (provider_services) — precios en CENTAVOS ───────────────────
+  // Los precios se almacenan en centavos, se muestran /100 en el front
+  const newServices: any[] = [
+    // Plomero
+    { id: "svc_plo_001", providerId: "pro_plo_001", catalogId: "PLO-001", category: "Plomería", subCategory: "Grifería",       modalities: ["PRESENCIAL"], allowsUrgent: false, price: 1500000,  notes: "Incluye mano de obra. Materiales aparte.", estimatedDuration: 90,  createdAt: now },
+    { id: "svc_plo_002", providerId: "pro_plo_001", catalogId: "PLO-002", category: "Plomería", subCategory: "Destapaciones",  modalities: ["PRESENCIAL"], allowsUrgent: true,  price: 2200000,  notes: "Urgencia 24hs con recargo nocturno. Garantía 48hs.", estimatedDuration: 60,  createdAt: now },
+    { id: "svc_plo_003", providerId: "pro_plo_001", catalogId: "PLO-003", category: "Plomería", subCategory: "Instalaciones",  modalities: ["PRESENCIAL"], allowsUrgent: false, price: 3500000,  notes: "Instalación completa. No incluye el bidet.", estimatedDuration: 120, createdAt: now },
+
+    // Electricista
+    { id: "svc_elec_001", providerId: "pro_elec_001", catalogId: "ELE-001", category: "Electricidad", subCategory: "Iluminación",     modalities: ["PRESENCIAL"], allowsUrgent: false, price: 2000000,  notes: "Instalación punto de luz o boca de tomacorriente. Incluye materiales básicos.", estimatedDuration: 90,  createdAt: now },
+    { id: "svc_elec_002", providerId: "pro_elec_001", catalogId: "ELE-002", category: "Electricidad", subCategory: "Tableros",        modalities: ["PRESENCIAL"], allowsUrgent: true,  price: 4500000,  notes: "Diagnóstico, reemplazo de disyuntores y normalización. Con garantía por escrito.", estimatedDuration: 120, createdAt: now },
+    { id: "svc_elec_003", providerId: "pro_elec_001", catalogId: "ELE-003", category: "Electricidad", subCategory: "Corte eléctrico", modalities: ["PRESENCIAL"], allowsUrgent: true,  price: 3000000,  notes: "Urgencia 24hs. Llegada en menos de 30 minutos en CABA.", estimatedDuration: 60,  createdAt: now },
+
+    // Gasista
+    { id: "svc_gas_001", providerId: "pro_gas_001", catalogId: "GAS-001", category: "Gasista", subCategory: "Calefones",    modalities: ["PRESENCIAL"], allowsUrgent: false, price: 4000000,  notes: "Instalación completa con certificado ENARGAS. No incluye el calefón.", estimatedDuration: 150, createdAt: now },
+    { id: "svc_gas_002", providerId: "pro_gas_001", catalogId: "GAS-002", category: "Gasista", subCategory: "Fugas de gas", modalities: ["PRESENCIAL"], allowsUrgent: true,  price: 2500000,  notes: "Urgencia 24hs. Detección y reparación de fuga. Habilitación incluida.", estimatedDuration: 90,  createdAt: now },
+
+    // Cerrajero
+    { id: "svc_cerr_001", providerId: "pro_cerr_001", catalogId: "CER-001", category: "Cerrajería", subCategory: "Apertura",        modalities: ["PRESENCIAL"], allowsUrgent: true,  price: 1800000,  notes: "Apertura sin daños en puerta. Sin cargo adicional por nocturnidad.", estimatedDuration: 30,  createdAt: now },
+    { id: "svc_cerr_002", providerId: "pro_cerr_001", catalogId: "CER-002", category: "Cerrajería", subCategory: "Bombines",        modalities: ["PRESENCIAL"], allowsUrgent: false, price: 2500000,  notes: "Cambio de bombín con 3 llaves. Marcas seguras disponibles.", estimatedDuration: 45,  createdAt: now },
+    { id: "svc_cerr_003", providerId: "pro_cerr_001", catalogId: "CER-003", category: "Cerrajería", subCategory: "Cajas fuertes",   modalities: ["PRESENCIAL"], allowsUrgent: true,  price: 3500000,  notes: "Apertura y reparación de cajas fuertes de todas las marcas.", estimatedDuration: 90,  createdAt: now },
+
+    // Pintor
+    { id: "svc_pin_001", providerId: "pro_pin_001", catalogId: "PIN-001", category: "Pintura", subCategory: "Interior",   modalities: ["PRESENCIAL"], allowsUrgent: false, price: 1200000,  notes: "Precio por ambiente. Incluye mano de obra, sellador y pintura látex primera calidad.", estimatedDuration: 480, createdAt: now },
+    { id: "svc_pin_002", providerId: "pro_pin_001", catalogId: "PIN-002", category: "Pintura", subCategory: "Exterior",   modalities: ["PRESENCIAL"], allowsUrgent: false, price: 1800000,  notes: "Frente de casa o local. Incluye andamio y pintura extemperie.", estimatedDuration: 600, createdAt: now },
+
+    // Carpintero
+    { id: "svc_carp_001", providerId: "pro_carp_001", catalogId: "CAR-001", category: "Carpintería", subCategory: "Pisos",    modalities: ["PRESENCIAL"], allowsUrgent: false, price: 3000000,  notes: "Reparación y lijado de piso de madera. Precio por m². Incluye barniz.", estimatedDuration: 480, createdAt: now },
+    { id: "svc_carp_002", providerId: "pro_carp_001", catalogId: "CAR-002", category: "Carpintería", subCategory: "Puertas",  modalities: ["PRESENCIAL"], allowsUrgent: false, price: 2200000,  notes: "Reparación de puerta trabada, ajuste de bisagras y cierre. Incluye materiales.", estimatedDuration: 120, createdAt: now },
+  ];
+
+  writeJson("provider_services", newServices);
+  console.log("[SEED] Demo data seeded: 6 providers, 15 services ✓");
 };
 
 export const seedAll = () => {
