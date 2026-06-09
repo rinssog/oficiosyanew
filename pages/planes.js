@@ -3,10 +3,8 @@
  * Suscripciones para CLIENTES (mano de obra gratis) + Planes PRESTADORES
  * Modelo: 20% comisión on-demand / 15% suscriptores
  */
-import { useEffect } from "react";
 import Head from "next/head";
 import Link from "next/link";
-import { useRouter } from "next/router";
 import NavBar from "../components/NavBar";
 import Footer from "../components/Footer";
 import { useAuth } from "../contexts/AuthContext";
@@ -174,23 +172,7 @@ const FAQ = [
 ];
 
 export default function PlanesPage() {
-  const { user, isReady } = useAuth();
-  const router = useRouter();
-
-  useEffect(() => {
-    if (!isReady) return;
-    if (!user) router.replace("/auth/register?redirect=/planes");
-  }, [isReady, user]);
-
-  if (!isReady || !user) return (
-    <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: 16, background: "#F7F9F5" }}>
-      <div style={{ fontSize: 40 }}>🔒</div>
-      <div style={{ fontWeight: 700, color: F, fontSize: 18 }}>Registrate para ver los planes</div>
-      <Link href="/auth/register?redirect=/planes">
-        <button style={{ background: V, color: "#fff", border: "none", borderRadius: 24, padding: "12px 28px", fontWeight: 800, fontSize: 15, cursor: "pointer" }}>Registrarme →</button>
-      </Link>
-    </div>
-  );
+  const { user } = useAuth();
 
   return (
     <>

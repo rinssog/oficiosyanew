@@ -1,6 +1,7 @@
 import { Router } from "express";
 import multer from "multer";
 import { fileURLToPath } from "url";
+import { authRequired } from "../security/middleware.js";
 
 import { readJson, writeJson, pushItem, generateId } from "../storage.js";
 import { CatalogItem, ProviderMaterial } from "../types.js";
@@ -788,6 +789,52 @@ router.get("/requests/:requestId/materials", async (req, res) => {
   const materials = await repos.materials.listByRequest(req.params.requestId);
   res.json({ ok: true, materials });
 });
+
+/* ── POST /providers/verification/submit ─── provider submits KYC docs ── */
+router.post("/providers/verification/submit", authRequired, (req, res) => {
+  const auth = (req as any).auth;
+  const userId: string = auth?.sub ?? "";
+  const { providerId, documents } = req.body || {};
+
+  if (!documents || typeof documents !== "object") {
+    return res.status(400).json({ ok: false, error: "Documentos requeridos" });
+  }
+
+  // Store submission in provider profile
+  const providers = readJson<any[]>("providers", []);
+  const idx = providers.findIndex((p: any) => p.id === providerId || p.userId === userId);
+
+  const submission = {
+    submittedAt: new Date().toISOString(),
+    status: "SUBMITTED",
+    documents: Object.fromEntries(
+      Object.entries(documents).map(([k, v]: [string, any]) => [
+        k,
+        { name: v?.name, type: v?.type, submittedAt: new Date().toISOString() }
+      ])
+    ),
+  };
+
+  if (idx !== -1) {
+    providers[idx].verificationSubmission = submission;
+    providers[idx].verificationStatus = "SUBMITTED";
+    providers[idx].updatedAt = new Date().toISOString();
+    writeJson("providers", providers);
+  }
+
+  // Also store in verification log
+  const logs = readJson<any[]>("verification_logs", []);
+  logs.push({
+    id: `vlog_${Date.now()}`,
+    providerId: providerId || providers[idx]?.id,
+    userId,
+    ...submission,
+  });
+  writeJson("verification_logs", logs);
+
+  return res.json({ ok: true, message: "Documentación enviada. El proceso de verificación puede demorar hasta 5 días hábiles." });
+});
+
 export default router;
 
 

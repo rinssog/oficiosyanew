@@ -123,6 +123,85 @@ router.get("/requests", authRequired, (req, res) => {
   return res.json({ ok: true, requests: all, total: all.length });
 });
 
+/* ── GET /requests/:id ─── single request detail ── */
+router.get("/requests/:id", authRequired, (req, res) => {
+  const { id } = req.params;
+  const auth = getAuth(req);
+  const userId: string = auth?.sub ?? "";
+  const role: string   = auth?.role ?? "";
+
+  const all = readJson<any[]>("requests", []);
+  const request = all.find((r: any) => r.id === id);
+  if (!request) return res.status(404).json({ ok: false, error: "Solicitud no encontrada" });
+
+  // Ownership check
+  if (role !== "ADMIN") {
+    const provider = role === "PROVIDER" ? findProviderByUserId(userId) : null;
+    const isOwner = request.clientId === userId ||
+      (provider && (request.providerId === provider.id || request.acceptedProviderId === provider.id));
+    if (!isOwner) return res.status(403).json({ ok: false, error: "Sin acceso" });
+  }
+
+  return res.json({ ok: true, request });
+});
+
+/* ── POST /requests/:id/confirm ─── client confirms work done, triggers payment release ── */
+router.post("/requests/:id/confirm", authRequired, requireRole("CLIENT", "ADMIN"), (req, res) => {
+  const { id } = req.params;
+  const auth = getAuth(req);
+  const userId: string = auth?.sub ?? "";
+  const role: string   = auth?.role ?? "";
+
+  const all = readJson<any[]>("requests", []);
+  const idx = all.findIndex((r: any) => r.id === id);
+  if (idx === -1) return res.status(404).json({ ok: false, error: "Solicitud no encontrada" });
+
+  const request = all[idx];
+  if (role !== "ADMIN" && request.clientId !== userId) {
+    return res.status(403).json({ ok: false, error: "Sin acceso" });
+  }
+  if (request.status === "DONE") {
+    return res.json({ ok: true, request, message: "Ya confirmado" });
+  }
+
+  all[idx].status = "DONE";
+  all[idx].confirmedAt = new Date().toISOString();
+  all[idx].updatedAt   = new Date().toISOString();
+  writeJson("requests", all);
+
+  return res.json({ ok: true, request: all[idx] });
+});
+
+/* ── POST /requests/:id/reject ─── client rejects work, sends back to PENDING ── */
+router.post("/requests/:id/reject", authRequired, requireRole("CLIENT", "ADMIN"), (req, res) => {
+  const { id } = req.params;
+  const auth = getAuth(req);
+  const userId: string = auth?.sub ?? "";
+  const role: string   = auth?.role ?? "";
+  const { reason } = req.body || {};
+
+  if (!reason?.trim()) {
+    return res.status(400).json({ ok: false, error: "Razón requerida para rechazar" });
+  }
+
+  const all = readJson<any[]>("requests", []);
+  const idx = all.findIndex((r: any) => r.id === id);
+  if (idx === -1) return res.status(404).json({ ok: false, error: "Solicitud no encontrada" });
+
+  const request = all[idx];
+  if (role !== "ADMIN" && request.clientId !== userId) {
+    return res.status(403).json({ ok: false, error: "Sin acceso" });
+  }
+
+  all[idx].status = "REVISION";
+  all[idx].rejectionReason  = reason.trim();
+  all[idx].rejectedAt       = new Date().toISOString();
+  all[idx].updatedAt        = new Date().toISOString();
+  writeJson("requests", all);
+
+  return res.json({ ok: true, request: all[idx] });
+});
+
 /* ── GET /providers/:providerId/requests ─── shortcut for provider's own requests ── */
 router.get("/providers/:providerId/requests", authRequired, (req, res) => {
   const { providerId } = req.params;
@@ -214,11 +293,24 @@ router.post("/quotes", authRequired, requireRole("PROVIDER", "ADMIN"), async (re
   return res.json({ ok: true, quote });
 });
 
-router.post("/quotes/:id/accept", (req, res) => {
+router.post("/quotes/:id/accept", authRequired, requireRole("CLIENT", "ADMIN"), (req, res) => {
   const quotes = ensureJsonArray<any>("quotes");
   const quote = quotes.find((q) => q.id === req.params.id);
   if (!quote) return res.status(404).json({ ok: false, error: "No existe" });
 
+  quote.status = "ACCEPTED";
+  quote.updatedAt = new Date().toISOString();
+  writeJson("quotes", quotes);
+  return res.json({ ok: true, quote });
+});
+
+/* ── POST /quotes/accept ─── alternate: body { quoteId } instead of path param ── */
+router.post("/quotes/accept", authRequired, requireRole("CLIENT", "ADMIN"), (req, res) => {
+  const { quoteId } = req.body || {};
+  if (!quoteId) return res.status(400).json({ ok: false, error: "quoteId requerido" });
+  const quotes = ensureJsonArray<any>("quotes");
+  const quote = quotes.find((q: any) => q.id === quoteId);
+  if (!quote) return res.status(404).json({ ok: false, error: "Presupuesto no encontrado" });
   quote.status = "ACCEPTED";
   quote.updatedAt = new Date().toISOString();
   writeJson("quotes", quotes);
@@ -268,5 +360,90 @@ router.post("/requests/:id/cancel", authRequired, (req, res) => {
   res.json({ ok: true, request: requestRecord });
 });
 
+
+/* ── POST /requests/:id/quote ─── provider creates quick quote on a request ── */
+router.post("/requests/:id/quote", authRequired, requireRole("PROVIDER", "ADMIN"), async (req, res) => {
+  const { id } = req.params;
+  const auth = getAuth(req);
+  const { items, notes } = req.body || {};
+
+  const all = readJson<any[]>("requests", []);
+  const request = all.find((r: any) => r.id === id);
+  if (!request) return res.status(404).json({ ok: false, error: "Solicitud no encontrada" });
+
+  const provider = findProviderByUserId(auth?.sub ?? "");
+  const providerId = provider?.id ?? req.body?.providerId;
+  if (!providerId) return res.status(400).json({ ok: false, error: "Prestador no encontrado" });
+
+  const laborItems = Array.isArray(items) ? items.filter((i: any) => i.kind === "LABOR" || !i.kind) : [];
+  const materialItems = Array.isArray(items) ? items.filter((i: any) => i.kind === "MATERIAL" || i.kind === "PART") : [];
+
+  const sum = (arr: any[]) => arr.reduce((s: number, i: any) => s + (Number(i.total) || Number(i.price) || 0), 0);
+  const laborTotal     = sum(laborItems.length ? laborItems : (Array.isArray(items) ? items : []));
+  const materialsTotal = sum(materialItems);
+
+  const quote: any = {
+    id: generateId("q_"),
+    requestId: id,
+    providerId,
+    items: Array.isArray(items) ? items : [{ label: notes || "Servicio", total: laborTotal, kind: "LABOR" }],
+    laborTotal,
+    materialsTotal,
+    notes: notes || "",
+    status: "PENDING",
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  };
+
+  const repos = getRepos();
+  await repos.quotes.create(quote);
+
+  // Update request status
+  const idx = all.findIndex((r: any) => r.id === id);
+  if (idx !== -1) {
+    all[idx].status = "QUOTED";
+    all[idx].providerId = all[idx].providerId || providerId;
+    all[idx].updatedAt = new Date().toISOString();
+    writeJson("requests", all);
+  }
+
+  return res.status(201).json({ ok: true, quote });
+});
+
+/* ── PUT /requests/:id/status ─── provider updates request status ── */
+router.put("/requests/:id/status", authRequired, (req, res) => {
+  const { id } = req.params;
+  const auth = getAuth(req);
+  const userId: string = auth?.sub ?? "";
+  const role: string   = auth?.role ?? "";
+  const { status } = req.body || {};
+
+  const VALID = ["PENDING", "QUOTED", "CONFIRMED", "IN_PROGRESS", "DONE", "CANCELLED", "REVISION"];
+  if (!status || !VALID.includes(status)) {
+    return res.status(400).json({ ok: false, error: `Estado inválido. Válidos: ${VALID.join(", ")}` });
+  }
+
+  const all = readJson<any[]>("requests", []);
+  const idx = all.findIndex((r: any) => r.id === id);
+  if (idx === -1) return res.status(404).json({ ok: false, error: "Solicitud no encontrada" });
+
+  const request = all[idx];
+
+  // Access check
+  if (role !== "ADMIN") {
+    const provider = role === "PROVIDER" ? findProviderByUserId(userId) : null;
+    const isOwner = request.clientId === userId ||
+      (provider && (request.providerId === provider.id || request.acceptedProviderId === provider.id));
+    if (!isOwner) return res.status(403).json({ ok: false, error: "Sin acceso" });
+  }
+
+  all[idx].status    = status;
+  all[idx].updatedAt = new Date().toISOString();
+  if (status === "IN_PROGRESS") all[idx].startedAt = new Date().toISOString();
+  if (status === "DONE")        all[idx].completedAt = new Date().toISOString();
+  writeJson("requests", all);
+
+  return res.json({ ok: true, request: all[idx] });
+});
 
 export default router;

@@ -92,19 +92,19 @@ export default function CheckoutPage() {
         <section style={{ background: '#fff', border: '1px solid var(--border)', borderRadius: 16, padding: 16, display: 'grid', gap: 12 }}>
           <strong>Resumen</strong>
           <div style={{ display: 'grid', gap: 6 }}>
-            <span>Mano de obra: ${ (Number(totals.labor).toFixed(2) }</span>
-            <span>Materiales: ${ (Number(totals.materials).toFixed(2) }</span>
-            <span>Fee plataforma (plan actual): ${ (currentFee.toFixed(2) }</span>
+            <span>Mano de obra: ${Number(totals.labor).toFixed(2)}</span>
+            <span>Materiales: ${Number(totals.materials).toFixed(2)}</span>
+            <span>Fee plataforma (plan actual): ${currentFee.toFixed(2)}</span>
             {totals.urgent && <span style={{ color: '#b45309' }}>Retención operativa: 50% (no seña)</span>}
-            <strong>Total estimado: ${ ((base + currentFee).toFixed(2) }</strong>
+            <strong>Total estimado: ${(base + currentFee).toFixed(2)}</strong>
           </div>
         </section>
 
         {suggested && (
           <section style={{ background: '#f8fff3', border: '1px solid var(--border)', borderRadius: 16, padding: 16, display: 'grid', gap: 10 }}>
             <strong>Ahorrá con suscripción</strong>
-            <span>Con el plan {suggested.name} pagarías fee de ${ (suggested.fee.toFixed(2) } en lugar de ${ (currentFee.toFixed(2) }.</span>
-            {savings > 0 && <span style={{ color: '#166534', fontWeight: 700 }}>Ahorro estimado por trabajo: ${ (savings.toFixed(2) }</span>}
+            <span>Con el plan {suggested.name} pagarías fee de ${suggested.fee.toFixed(2)} en lugar de ${currentFee.toFixed(2)}.</span>
+            {savings > 0 && <span style={{ color: '#166534', fontWeight: 700 }}>Ahorro estimado por trabajo: ${savings.toFixed(2)}</span>}
             {user ? (
               <button onClick={() => subscribe(suggested.id)} disabled={busy} style={{ alignSelf: 'start', background: 'var(--primary)', color: '#fff', border: 'none', borderRadius: 10, padding: '10px 14px', fontWeight: 600 }}>Suscribirme al plan {suggested.name}</button>
             ) : (
