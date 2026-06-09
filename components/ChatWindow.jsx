@@ -57,7 +57,7 @@ export default function ChatWindow({ requestId, toName }) {
           </p>
         )}
         {messages.map((m, i) => {
-          const mine = m.fromId === user?.id;
+          const mine = (m.senderId || m.fromId) === user?.id;
           return (
             <div key={m.id || i} style={{ alignSelf: mine ? "flex-end" : "flex-start", maxWidth: "75%" }}>
               <div style={{

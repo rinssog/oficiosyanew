@@ -244,15 +244,136 @@ router.post("/chat/threads/:id/read", authRequired, (req, res) => {
   return res.json({ ok: true });
 });
 
+/* ── GET /chat/:requestId ─── simplified endpoint for embedded ChatWindow ── */
+router.get("/chat/:requestId", authRequired, (req, res) => {
+  const { requestId } = req.params;
+  const auth = (req as any).auth;
+  const userId: string = auth.sub ?? auth.id ?? "";
+  const role: string   = auth.role ?? "";
+
+  const threads = getThreads();
+  let thread = threads.find(t => t.requestId === requestId);
+
+  if (!thread) {
+    const requests = readJson<any[]>("requests", []);
+    const request  = requests.find((r: any) => r.id === requestId);
+    if (!request) return res.json({ ok: true, messages: [] });
+
+    thread = {
+      id: randomUUID(),
+      requestId,
+      clientId:   request.clientId   || (role === "CLIENT"   ? userId : ""),
+      providerId: request.providerId || (role === "PROVIDER" ? userId : ""),
+      createdAt:  new Date().toISOString(),
+      updatedAt:  new Date().toISOString(),
+      unreadClient:   0,
+      unreadProvider: 0,
+    };
+    threads.push(thread);
+    saveThreads(threads);
+  }
+
+  if (role !== "ADMIN" && thread.clientId !== userId && thread.providerId !== userId) {
+    return res.json({ ok: true, messages: [] });
+  }
+
+  const messages = getMessages()
+    .filter(m => m.threadId === thread!.id)
+    .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+
+  return res.json({ ok: true, messages, threadId: thread.id });
+});
+
+/* ── POST /chat/:requestId ─── simplified endpoint for embedded ChatWindow ── */
+router.post("/chat/:requestId", authRequired, async (req, res) => {
+  const { requestId } = req.params;
+  const auth = (req as any).auth;
+  const userId: string = auth.sub ?? auth.id ?? "";
+  const role: string   = auth.role ?? "";
+  const { body } = req.body;
+
+  if (!body?.trim()) return res.status(400).json({ ok: false, error: "Mensaje vacío" });
+  if (body.length > 2000) return res.status(400).json({ ok: false, error: "Mensaje muy largo" });
+
+  const threads = getThreads();
+  let thread = threads.find(t => t.requestId === requestId);
+
+  if (!thread) {
+    const requests = readJson<any[]>("requests", []);
+    const request  = requests.find((r: any) => r.id === requestId);
+    if (!request) return res.status(404).json({ ok: false, error: "Solicitud no encontrada" });
+
+    thread = {
+      id: randomUUID(),
+      requestId,
+      clientId:   request.clientId   || (role === "CLIENT"   ? userId : ""),
+      providerId: request.providerId || (role === "PROVIDER" ? userId : ""),
+      createdAt:  new Date().toISOString(),
+      updatedAt:  new Date().toISOString(),
+      unreadClient:   0,
+      unreadProvider: 0,
+    };
+    threads.push(thread);
+    saveThreads(threads);
+  }
+
+  if (role !== "ADMIN" && thread.clientId !== userId && thread.providerId !== userId) {
+    return res.status(403).json({ ok: false, error: "Sin acceso" });
+  }
+
+  if (isSuspended(userId)) {
+    return res.status(403).json({ ok: false, error: "Tu cuenta está suspendida temporalmente" });
+  }
+
+  let moderated = false;
+  try {
+    const modResult = await moderateMessage(userId, thread.requestId, body);
+    if (modResult?.blocked) {
+      return res.status(400).json({ ok: false, error: "Mensaje bloqueado por moderación", reason: modResult.reason });
+    }
+    if (modResult?.flagged) moderated = true;
+  } catch {}
+
+  const users = readJson<any[]>("users", []);
+  const sender = users.find((u: any) => u.id === userId);
+
+  const message: ChatMessage = {
+    id:         randomUUID(),
+    threadId:   thread.id,
+    senderId:   userId,
+    senderRole: role as any,
+    senderName: sender?.name || sender?.email || "Usuario",
+    body:       body.trim(),
+    createdAt:  new Date().toISOString(),
+    read:       false,
+    moderated,
+  };
+
+  const messages = getMessages();
+  messages.push(message);
+  saveMessages(messages);
+
+  const tidx = threads.findIndex(t => t.id === thread!.id);
+  if (tidx !== -1) {
+    threads[tidx].lastMessage   = body.trim().slice(0, 80);
+    threads[tidx].lastMessageAt = message.createdAt;
+    threads[tidx].updatedAt     = message.createdAt;
+    if (role === "CLIENT")   threads[tidx].unreadProvider += 1;
+    else if (role === "PROVIDER") threads[tidx].unreadClient += 1;
+  }
+  saveThreads(threads);
+
+  return res.status(201).json({ ok: true, message });
+});
+
 /* ── GET /chat/moderation/logs ───────────────────────────────── */
-router.get("/chat/moderation/logs", authRequired, (req, res) => {
+router.get("/chat/moderation/logs", authRequired, async (req, res) => {
   const auth = (req as any).auth;
   const role: string = auth.role ?? "";
   if (role !== "ADMIN") return res.status(403).json({ ok: false, error: "Solo admins" });
 
   try {
-    // Try Prisma first, fallback to JSON
-    const { PrismaClient } = await import("@prisma/client").catch(() => ({ PrismaClient: null }));
+    const { PrismaClient } = await import("@prisma/client").catch(() => ({ PrismaClient: null })) as any;
     if (PrismaClient) {
       const prisma = new PrismaClient();
       const logs = await (prisma as any).chatModerationLog?.findMany({
