@@ -1,5 +1,3 @@
-"use client";
-
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/router";
 import Head from "next/head";
@@ -7,23 +5,14 @@ import NavBar from "../../components/NavBar";
 import Footer from "../../components/Footer";
 import { useAuth } from "../../contexts/AuthContext";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:4000";
-
-async function fetchQuotes(requestId) {
-  const res = await fetch(`${API_BASE}/api/quotes/by-request/${requestId}`);
-  const data = await res.json();
-  if (!res.ok || data.ok === false) throw new Error(data.error || "No se pudieron obtener los presupuestos");
-  return data.quotes || [];
-}
-
 const priceFmt = new Intl.NumberFormat("es-AR", { style: "currency", currency: "ARS" });
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:4000";
 const resolveAttachmentUrl = (path) => (path && (path.startsWith('http') ? path : `${API_BASE}${path}`));
-
 
 export default function RequestPage() {
   const router = useRouter();
   const { id } = router.query;
-  const { user } = useAuth();
+  const { user, apiRequest, isReady } = useAuth();
 
   const [quotes, setQuotes] = useState([]);
   const [materials, setMaterials] = useState([]);
@@ -32,31 +21,44 @@ export default function RequestPage() {
   const [materialsError, setMaterialsError] = useState(null);
   const [message, setMessage] = useState(null);
 
+  // Auth guard
   useEffect(() => {
-    if (!id) return;
+    if (!isReady) return;
+    if (!user) router.replace("/auth/login");
+  }, [isReady, user]);
+
+  useEffect(() => {
+    if (!id || !isReady) return;
     setLoading(true);
     setError(null);
-    fetchQuotes(id)
-      .then(setQuotes)
+
+    // Fetch quotes with auth
+    apiRequest(`/api/quotes/by-request/${id}`)
+      .then((data) => {
+        if (data.ok === false) throw new Error(data.error || "No se pudieron obtener los presupuestos");
+        setQuotes(data.quotes || []);
+      })
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false));
 
-    fetch(`${API_BASE}/api/requests/${id}/materials`)
-      .then((res) => res.json())
+    // Fetch materials with auth
+    apiRequest(`/api/requests/${id}/materials`)
       .then((payload) => {
         if (payload.ok === false) throw new Error(payload.error || "No se pudieron cargar los materiales");
         setMaterials(payload.materials || []);
         setMaterialsError(null);
       })
       .catch((e) => setMaterialsError(e.message));
-  }, [id]);
+  }, [id, isReady]);
 
   const accept = async (qid) => {
     setMessage(null);
     try {
-      const res = await fetch(`${API_BASE}/api/quotes/accept`, { method: "POST", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ quoteId: qid }) });
-      const data = await res.json();
-      if (!res.ok || data.ok === false) throw new Error(data.error || "No se pudo aceptar");
+      const data = await apiRequest("/api/quotes/accept", {
+        method: "POST",
+        body: JSON.stringify({ quoteId: qid }),
+      });
+      if (data.ok === false) throw new Error(data.error || "No se pudo aceptar");
       setMessage("Presupuesto aceptado");
       setQuotes((prev) => prev.map((q) => (q.id === qid ? { ...q, status: "ACCEPTED" } : q)));
     } catch (e) {

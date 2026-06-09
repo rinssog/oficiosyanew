@@ -1,5 +1,3 @@
-"use client";
-
 import { useEffect, useMemo, useState } from "react";
 import Head from "next/head";
 import Link from "next/link";
@@ -17,12 +15,11 @@ const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:4000";
 const F = "#0D3B1F", V = "#16A34A";
 
 const PROVIDER_NAV = [
-  { href: "/providers/dashboard",  label: "Panel principal" },
-  { href: "/providers/solicitudes",label: "Solicitudes" },
-  { href: "/chat",                  label: "Chat clientes" },
-  { href: "/providers/quotes",      label: "Presupuestos" },
-  { href: "/providers/verificacion",label: "Documentación" },
-  { href: "/client/reclamos",       label: "Reclamos" },
+  { href: "/providers/dashboard",   label: "📊 Mi panel" },
+  { href: "/providers/solicitudes", label: "📋 Solicitudes" },
+  { href: "/providers/quotes",      label: "💬 Presupuestos" },
+  { href: "/providers/verificacion",label: "🛡️ Verificación" },
+  { href: "/chat",                  label: "💬 Chat" },
 ];
 
 const STATUS_COLORS = {

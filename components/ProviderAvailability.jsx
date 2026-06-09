@@ -1,5 +1,3 @@
-"use client";
-
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 const DEFAULT_TIMEZONE = "America/Argentina/Buenos_Aires";

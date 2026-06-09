@@ -15,12 +15,11 @@ import { useAuth } from "../../contexts/AuthContext";
 const F = "#0D3B1F", V = "#16A34A";
 
 const PROVIDER_NAV = [
-  { href: "/providers/dashboard",   label: "Panel principal" },
-  { href: "/providers/solicitudes", label: "Solicitudes" },
-  { href: "/chat",                   label: "Chat clientes" },
-  { href: "/providers/quotes",       label: "Presupuestos" },
-  { href: "/providers/verificacion", label: "Documentación" },
-  { href: "/client/reclamos",        label: "Reclamos" },
+  { href: "/providers/dashboard",   label: "📊 Mi panel" },
+  { href: "/providers/solicitudes", label: "📋 Solicitudes" },
+  { href: "/providers/quotes",      label: "💬 Presupuestos" },
+  { href: "/providers/verificacion",label: "🛡️ Verificación" },
+  { href: "/chat",                  label: "💬 Chat" },
 ];
 
 const STATUS_CONFIG = {

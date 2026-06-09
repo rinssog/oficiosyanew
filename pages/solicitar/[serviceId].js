@@ -1,5 +1,3 @@
-"use client";
-
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
@@ -9,6 +7,23 @@ import { useAuth } from '../../contexts/AuthContext';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:4000';
 const priceFmt = new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' });
+
+/** Format ISO date string → "lunes 9 de junio" */
+const formatDateLabel = (value) => {
+  if (!value) return '';
+  const base = new Date(`${value}T00:00:00`);
+  if (Number.isNaN(base.getTime())) return value;
+  return base.toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' });
+};
+
+/** Format ISO start+end → "09:00 - 10:00", fallback to slot label */
+const formatSlotRange = (startIso, endIso, fallback) => {
+  const start = new Date(startIso);
+  const end   = new Date(endIso);
+  if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) return fallback || '-';
+  const fmt = (d) => d.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
+  return `${fmt(start)} - ${fmt(end)}`;
+};
 
 const groupSlotsByDate = (slots) => {
   if (!Array.isArray(slots) || slots.length === 0) return [];

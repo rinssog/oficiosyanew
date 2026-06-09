@@ -13,11 +13,11 @@ const F = "#0D3B1F", V = "#16A34A";
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:4000";
 
 const PROVIDER_NAV = [
-  { href: "/providers/dashboard",      label: "Mi panel" },
-  { href: "/providers/solicitudes",    label: "Solicitudes" },
-  { href: "/providers/quotes",         label: "Presupuestos" },
-  { href: "/providers/verificacion",   label: "Verificación" },
-  { href: "/chat",                     label: "Chat" },
+  { href: "/providers/dashboard",   label: "📊 Mi panel" },
+  { href: "/providers/solicitudes", label: "📋 Solicitudes" },
+  { href: "/providers/quotes",      label: "💬 Presupuestos" },
+  { href: "/providers/verificacion",label: "🛡️ Verificación" },
+  { href: "/chat",                  label: "💬 Chat" },
 ];
 
 const KINDS = [
@@ -29,14 +29,10 @@ const KINDS = [
 
 const EMPTY_ROW = { kind: "LABOR", description: "", qty: 1, unit: "", total: "" };
 
-async function uploadFile(file, token) {
+async function uploadFile(file, apiRequest) {
   const fd = new FormData();
   fd.append("file", file);
-  const headers = {};
-  if (token) headers["Authorization"] = `Bearer ${token}`;
-  const res = await fetch(`${API_BASE}/api/files/upload`, { method: "POST", body: fd, headers });
-  const data = await res.json();
-  if (!res.ok || data.ok === false) throw new Error(data.error || "No se pudo subir el archivo");
+  const data = await apiRequest("/api/files/upload", { method: "POST", body: fd });
   return data.url;
 }
 
@@ -48,7 +44,7 @@ const fmt = v => {
 
 export default function ProviderQuotesPage() {
   const router = useRouter();
-  const { user, provider, token, refreshProvider, apiRequest, isReady } = useAuth();
+  const { user, provider, refreshProvider, apiRequest, isReady } = useAuth();
 
   const [requestId, setRequestId] = useState("");
   const [rows, setRows] = useState([{ ...EMPTY_ROW }]);
@@ -97,7 +93,7 @@ export default function ProviderQuotesPage() {
   const handleUpload = async (idx, file) => {
     setUploading(u => ({ ...u, [idx]: true }));
     try {
-      const url = await uploadFile(file, token);
+      const url = await uploadFile(file, apiRequest);
       updateRow(idx, { attachmentUrl: url });
     } catch (e) {
       setError(e.message);

@@ -10,7 +10,6 @@ import Footer from "../../components/Footer";
 import DashboardShell from "../../components/DashboardShell";
 import { useAuth } from "../../contexts/AuthContext";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:4000";
 const F = "#0D3B1F", V = "#16A34A", G = "#C9A227";
 
 const ADMIN_NAV = [
@@ -34,7 +33,7 @@ const STATUS_MAP = {
 };
 
 export default function AdminEscrow() {
-  const { user, token, isReady } = useAuth();
+  const { user, apiRequest, isReady } = useAuth();
   const router = useRouter();
   const [records, setRecords] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -49,10 +48,8 @@ export default function AdminEscrow() {
   async function loadEscrow() {
     setLoading(true);
     try {
-      const headers = token ? { Authorization: `Bearer ${token}` } : {};
-      const res = await fetch(`${API_BASE}/api/admin/escrow`, { headers });
-      const data = await res.json();
-      if (data.ok) setRecords(data.records || []);
+      const data = await apiRequest("/api/admin/escrow");
+      if (data.ok !== false) setRecords(data.records || []);
     } catch {}
     setLoading(false);
   }
