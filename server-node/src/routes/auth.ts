@@ -7,6 +7,7 @@ import { z } from "zod";
 import { LoginSchema, RegisterSchema } from "../validation/schemas.js";
 import { signToken } from "../security/jwt.js";
 import { getRepos } from "../repositories/factory.js";
+import { authRequired } from "../security/middleware.js";
 
 const router = Router();
 
@@ -66,6 +67,18 @@ router.post("/users/login", async (req, res) => {
   const provider = providers.find((p) => p.userId === user.id) || null;
 
   res.json({ ok: true, token, user: { id: user.id, email: user.email, name: user.name, role: user.role }, provider });
+});
+
+/* ── GET /auth/me ─── validate token + return current user info ── */
+router.get("/auth/me", authRequired, (req, res) => {
+  const auth = (req as any).auth as { sub: string; role: string } | undefined;
+  if (!auth?.sub) return res.status(401).json({ ok: false, error: "No autenticado" });
+  const users = readJson<any[]>("users", []);
+  const user = users.find((u) => u.id === auth.sub);
+  if (!user) return res.status(404).json({ ok: false, error: "Usuario no encontrado" });
+  const providers = readJson<any[]>("providers", []);
+  const provider = providers.find((p) => p.userId === user.id) || null;
+  return res.json({ ok: true, user: { id: user.id, email: user.email, name: user.name, role: user.role }, provider });
 });
 
 export default router;

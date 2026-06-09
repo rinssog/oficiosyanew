@@ -1,11 +1,11 @@
-import { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react';
 
 const STORAGE_KEY = 'oficiosya_auth';
 const AuthContext = createContext(null);
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:4000';
 
-async function baseRequest(path, options = {}) {
+async function baseRequest(path, options = {}, onUnauthorized = null) {
   const { body, ...rest } = options || {};
   const isFormData = typeof FormData !== "undefined" && body instanceof FormData;
 
@@ -25,6 +25,12 @@ async function baseRequest(path, options = {}) {
 
   const res = await fetch(`${API_BASE}${path}`, fetchOptions);
   const data = await res.json().catch(() => ({}));
+
+  // Auto-logout on expired/invalid token (401)
+  if (res.status === 401 && onUnauthorized) {
+    onUnauthorized();
+  }
+
   if (!res.ok || data.ok === false) {
     const message = data.error || "Error inesperado";
     throw new Error(message);
@@ -36,6 +42,11 @@ async function baseRequest(path, options = {}) {
 export function AuthProvider({ children }) {
   const [state, setState] = useState({ user: null, provider: null, token: null });
   const [isReady, setIsReady] = useState(false);
+  // Ref so callbacks in useMemo always see latest logout without stale closure
+  const logoutRef = useRef(null);
+
+  const doLogout = () => setState({ user: null, provider: null, token: null });
+  logoutRef.current = doLogout;
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -63,14 +74,14 @@ export function AuthProvider({ children }) {
       if (state.token && !headers["Authorization"]) {
         headers["Authorization"] = `Bearer ${state.token}`;
       }
-      return baseRequest(path, { ...options, headers });
+      // Pass onUnauthorized to auto-logout when token expires (401)
+      return baseRequest(path, { ...options, headers }, () => logoutRef.current?.());
     },
     async register(payload) {
       const data = await baseRequest('/api/users/register', {
         method: 'POST',
         body: JSON.stringify(payload),
       });
-      // Auto-login after successful registration
       setState({ user: data.user, provider: data.provider ?? null, token: data.token });
       return data;
     },
@@ -83,24 +94,30 @@ export function AuthProvider({ children }) {
       return data;
     },
     logout() {
-      setState({ user: null, provider: null, token: null });
+      doLogout();
     },
     async refreshProvider(userId) {
       if (!userId) return null;
-      const data = await baseRequest(`/api/providers/by-user/${userId}`);
+      const data = await baseRequest(`/api/providers/by-user/${userId}`, {}, () => logoutRef.current?.());
       setState((prev) => ({ ...prev, provider: data.provider }));
       return data.provider;
     },
     async acceptTerms({ userId, contractType, version, nameSigned }) {
+      // Uses apiRequest (with auth token) — terms acceptance is user-specific
+      const headers = {};
+      if (state.token) headers["Authorization"] = `Bearer ${state.token}`;
       const data = await baseRequest('/api/terms/accept', {
         method: 'POST',
+        headers,
         body: JSON.stringify({ userId, contractType, version, nameSigned }),
-      });
+      }, () => logoutRef.current?.());
       return data.acceptance;
     },
     async getUserTerms(userId, contractType = 'GENERAL') {
       if (!userId) return { latest: null, history: [] };
-      return baseRequest(`/api/users/${userId}/terms?contractType=${contractType}`);
+      const headers = {};
+      if (state.token) headers["Authorization"] = `Bearer ${state.token}`;
+      return baseRequest(`/api/users/${userId}/terms?contractType=${contractType}`, { headers }, () => logoutRef.current?.());
     },
     isReady,
   }), [state, isReady]);

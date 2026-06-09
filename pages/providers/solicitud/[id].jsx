@@ -22,7 +22,7 @@ const STATUS_LABELS = {
 export default function ProviderSolicitudPage() {
   const router = useRouter();
   const { id } = router.query;
-  const { user, provider, apiRequest } = useAuth();
+  const { user, provider, apiRequest, isReady } = useAuth();
   const [req,     setReq]     = useState(null);
   const [loading, setLoading] = useState(true);
   const [quote,   setQuote]   = useState({ amount:"", notes:"" });
@@ -30,13 +30,20 @@ export default function ProviderSolicitudPage() {
   const [err,     setErr]     = useState(null);
   const [tab,     setTab]     = useState("detalle");
 
+  // Auth guard — only providers can view this page
   useEffect(() => {
-    if (!id) return;
+    if (!isReady) return;
+    if (!user) { router.replace("/auth/login?role=PROVIDER"); return; }
+    if (user.role !== "PROVIDER") { router.replace("/"); return; }
+  }, [isReady, user, router]);
+
+  useEffect(() => {
+    if (!id || !isReady || !user) return;
     apiRequest(`/api/requests/${id}`)
       .then(d => setReq(d.request || null))
       .catch(() => {})
       .finally(() => setLoading(false));
-  }, [id, apiRequest]);
+  }, [id, isReady, user, apiRequest]);
 
   const sendQuote = async () => {
     if (!quote.amount || isNaN(Number(quote.amount))) { setErr("Ingresá un monto válido"); return; }

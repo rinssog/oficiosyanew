@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { getRepos } from "../repositories/factory.js";
+import { authRequired } from "../security/middleware.js";
 // Mercado Pago SDK (opcional). Si no hay token, cae a placeholder.
 let mpAvailable = false as boolean;
 let PreferenceClient: any = null;
@@ -16,13 +17,13 @@ import { PrismaClient } from "@prisma/client";
 
 const router = Router();
 
-// Configuración de checkout (placeholder, ampliable con Mercado Pago)
+// Configuración de checkout — clave pública segura de devolver (no autenticar)
 router.get("/payments/config", (_req, res) => {
   res.json({ ok: true, provider: "mercadopago", publicKey: process.env.MP_PUBLIC_KEY || null });
 });
 
-// Crea un intento de pago (placeholder). En el futuro: preference MP.
-router.post("/payments/checkout", async (req, res) => {
+// Crea un intento de pago. Requiere auth — solo usuarios registrados pueden pagar.
+router.post("/payments/checkout", authRequired, async (req, res) => {
   const { userId, providerId, quoteId, items = [], totals = {}, urgent } = req.body || {};
   if (!userId || !providerId) return res.status(400).json({ ok: false, error: "userId y providerId requeridos" });
 
@@ -78,10 +79,11 @@ router.post("/payments/checkout", async (req, res) => {
       const client = new PreferenceClient(new MercadoPagoConfig({ accessToken }));
       const pref = await client.create({
         body: {
+          // ARS: unit_price en pesos enteros (NO centavos — MercadoPago Argentina usa pesos directamente)
           items: [
-            { title: 'Servicio - Mano de obra', quantity: 1, unit_price: Number(totals?.labor || 0) / 100, currency_id: 'ARS' },
-            { title: 'Materiales', quantity: 1, unit_price: Number(totals?.materials || 0) / 100, currency_id: 'ARS' },
-            { title: 'Tarifa de plataforma', quantity: 1, unit_price: platformFee / 100, currency_id: 'ARS' },
+            ...(Number(totals?.labor || 0) > 0 ? [{ title: 'Servicio - Mano de obra', quantity: 1, unit_price: Number(totals.labor), currency_id: 'ARS' }] : []),
+            ...(Number(totals?.materials || 0) > 0 ? [{ title: 'Materiales', quantity: 1, unit_price: Number(totals.materials), currency_id: 'ARS' }] : []),
+            ...(platformFee > 0 ? [{ title: 'Tarifa de plataforma', quantity: 1, unit_price: platformFee, currency_id: 'ARS' }] : []),
           ],
           metadata: { paymentId: attempt.id, urgent: !!urgent },
           back_urls: {

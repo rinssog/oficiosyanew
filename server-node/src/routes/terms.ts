@@ -1,6 +1,6 @@
 ﻿import { Router } from "express";
 import { readJson, writeJson, generateId, pushItem } from "../storage.js";
-import { adminTokenRequired } from "../security/middleware.js";
+import { adminTokenRequired, authRequired } from "../security/middleware.js";
 import { getRepos } from "../repositories/factory.js";
 import { createHash } from "crypto";
 
@@ -34,8 +34,13 @@ router.post("/admin/terms", adminTokenRequired, async (req, res) => {
   }
 });
 
-router.post("/terms/accept", async (req, res) => {
+router.post("/terms/accept", authRequired, async (req, res) => {
+  const auth = (req as any).auth as { sub: string; role: string } | undefined;
   const { userId, contractType, version, nameSigned, ip } = req.body || {};
+  // Only allow users to accept terms for themselves (ADMIN can for any user)
+  if (auth?.sub !== userId && auth?.role !== "ADMIN") {
+    return res.status(403).json({ ok: false, error: "Solo podés aceptar términos en tu propio nombre" });
+  }
   if (!userId || !contractType || !version || !nameSigned) {
     return res.status(400).json({ ok: false, error: "Campos requeridos" });
   }
@@ -76,7 +81,12 @@ router.post("/terms/accept", async (req, res) => {
   res.json({ ok: true, acceptance });
 });
 
-router.get("/users/:id/terms", async (req, res) => {
+router.get("/users/:id/terms", authRequired, async (req, res) => {
+  const auth = (req as any).auth as { sub: string; role: string } | undefined;
+  // Only allow users to read their own terms (ADMIN can read any)
+  if (auth?.sub !== req.params.id && auth?.role !== "ADMIN") {
+    return res.status(403).json({ ok: false, error: "Sin acceso a los términos de este usuario" });
+  }
   const contractType = String(req.query.contractType || "GENERAL").toUpperCase();
   const repos = getRepos();
   let history: any[] = [];

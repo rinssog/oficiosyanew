@@ -317,10 +317,41 @@ router.post("/quotes/accept", authRequired, requireRole("CLIENT", "ADMIN"), (req
   return res.json({ ok: true, quote });
 });
 
-router.get("/quotes/by-request/:requestId", (req, res) => {
+router.get("/quotes/by-request/:requestId", authRequired, (req, res) => {
   const quotes = readJson<any[]>("quotes", []);
   const filtered = quotes.filter((q) => q.requestId === req.params.requestId);
   return res.json({ ok: true, quotes: filtered });
+});
+
+/* ── GET /requests/:id/materials ─── extract material items from quotes for a request ── */
+router.get("/requests/:id/materials", authRequired, (req, res) => {
+  const { id } = req.params;
+  const auth = getAuth(req);
+  const userId: string = auth?.sub ?? "";
+  const role: string   = auth?.role ?? "";
+
+  const all = readJson<any[]>("requests", []);
+  const request = all.find((r: any) => r.id === id);
+  if (!request) return res.status(404).json({ ok: false, error: "Solicitud no encontrada" });
+
+  // Ownership check
+  if (role !== "ADMIN") {
+    const provider = role === "PROVIDER" ? findProviderByUserId(userId) : null;
+    const isOwner = request.clientId === userId ||
+      (provider && (request.providerId === provider.id || request.acceptedProviderId === provider.id));
+    if (!isOwner) return res.status(403).json({ ok: false, error: "Sin acceso" });
+  }
+
+  // Extract material items from all quotes linked to this request
+  const quotes = readJson<any[]>("quotes", []);
+  const requestQuotes = quotes.filter((q: any) => q.requestId === id);
+  const materials = requestQuotes.flatMap((q: any) =>
+    (Array.isArray(q.items) ? q.items : [])
+      .filter((item: any) => item.kind === "MATERIAL" || item.kind === "PART")
+      .map((item: any) => ({ ...item, quoteId: q.id, providerId: q.providerId, createdAt: q.createdAt }))
+  );
+
+  return res.json({ ok: true, materials });
 });
 
 router.post("/requests/:id/cancel", authRequired, (req, res) => {
@@ -365,7 +396,12 @@ router.post("/requests/:id/cancel", authRequired, (req, res) => {
 router.post("/requests/:id/quote", authRequired, requireRole("PROVIDER", "ADMIN"), async (req, res) => {
   const { id } = req.params;
   const auth = getAuth(req);
-  const { items, notes } = req.body || {};
+  // Accept both: { items: [...] } (detailed) and { amount: number, notes } (shorthand from simple UI)
+  const { notes, amount } = req.body || {};
+  let items = req.body?.items;
+  if (!Array.isArray(items) && Number(amount) > 0) {
+    items = [{ label: notes || "Servicio", total: Number(amount), kind: "LABOR" }];
+  }
 
   const all = readJson<any[]>("requests", []);
   const request = all.find((r: any) => r.id === id);
