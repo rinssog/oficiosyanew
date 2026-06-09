@@ -45,7 +45,7 @@ export default function RequestServicePage() {
   const router = useRouter();
   const { serviceId } = router.query;
   const providerId = router.query.providerId;
-  const { user, apiRequest } = useAuth();
+  const { user, apiRequest, isReady } = useAuth();
 
   const [service, setService] = useState(null);
   const [providerName, setProviderName] = useState('');
@@ -63,6 +63,15 @@ export default function RequestServicePage() {
   const [manualSchedule, setManualSchedule] = useState({ date: '', startTime: '', endTime: '' });
   const [notes, setNotes] = useState('');
   const [isUrgent, setIsUrgent] = useState(false);
+
+  // Auth guard — only authenticated CLIENTs can request services
+  useEffect(() => {
+    if (!isReady) return;
+    if (!user) {
+      const returnTo = encodeURIComponent(router.asPath);
+      router.replace(`/auth/login?role=CLIENT&next=${returnTo}`);
+    }
+  }, [isReady, user, router]);
 
   const fetchSlots = useCallback(async () => {
     if (!providerId) return;
@@ -82,7 +91,7 @@ export default function RequestServicePage() {
   }, [providerId, apiRequest]);
 
   useEffect(() => {
-    if (!serviceId || !providerId) return;
+    if (!serviceId || !providerId || !isReady || !user) return;
     const load = async () => {
       setLoading(true);
       setError(null);
@@ -102,7 +111,7 @@ export default function RequestServicePage() {
       }
     };
     load();
-  }, [serviceId, providerId, fetchSlots]);
+  }, [serviceId, providerId, isReady, user, fetchSlots]);
 
   const priceLabel = useMemo(() => (service ? priceFmt.format((service.price || 0) / 100) : ''), [service]);
 
@@ -154,7 +163,7 @@ export default function RequestServicePage() {
         body: JSON.stringify({
           serviceId: service.id,
           providerId,
-          clientId: user?.id || 'usr_demo_client',
+          clientId: user.id,
           schedule,
           notes,
         }),
@@ -172,6 +181,9 @@ export default function RequestServicePage() {
       setError(err.message);
     }
   };
+
+  // Don't render while redirecting unauthenticated users
+  if (!isReady || !user) return null;
 
   return (
     <div>
@@ -294,7 +306,6 @@ export default function RequestServicePage() {
                 </button>
                 {message && <span style={{ color: '#16a34a' }}>{message}</span>}
                 {error && <span style={{ color: '#c62828' }}>{error}</span>}
-                {!user && <p style={{ color: '#777', fontSize: 13 }}>Inicia sesion para seguir el estado de tus solicitudes en tu panel.</p>}
               </form>
             </section>
           </>

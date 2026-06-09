@@ -9,6 +9,7 @@ import { Router } from "express";
 import { authRequired } from "../security/middleware.js";
 import { requireRole } from "../security/roles.js";
 import { PrismaClient } from "@prisma/client";
+import { readJson } from "../storage.js";
 
 const router = Router();
 function getAuth(req: any) { return (req.auth ?? req.user ?? {}) as { sub?: string; role?: string }; }
@@ -62,9 +63,18 @@ router.get("/ratings/provider/:providerId", async (req, res) => {
       orderBy: { createdAt: "desc" },
       take: 50,
     });
-    const avg = ratings.length ? ratings.reduce((a,r)=>a+r.average,0)/ratings.length : 0;
+    const avg = ratings.length ? ratings.reduce((a: number,r: any)=>a+r.average,0)/ratings.length : 0;
     return res.json({ ok:true, ratings, average: avg.toFixed(1), total: ratings.length });
-  } catch(e: any) { return res.status(500).json({ ok:false, error: e.message }); }
+  } catch {
+    // JSON storage fallback
+    const all = readJson<any[]>("provider_ratings", []);
+    const ratings = all
+      .filter((r: any) => r.providerId === req.params.providerId)
+      .sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+      .slice(0, 50);
+    const avg = ratings.length ? ratings.reduce((a: number, r: any) => a + (r.average || r.score || 0), 0) / ratings.length : 0;
+    return res.json({ ok: true, ratings, average: avg.toFixed(1), total: ratings.length });
+  }
 });
 
 // ─── PUT /api/ratings/:id/response — Prestador responde ──────────────────────

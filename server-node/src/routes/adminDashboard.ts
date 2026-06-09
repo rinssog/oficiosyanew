@@ -6,6 +6,7 @@ import { Router } from "express";
 import { authRequired } from "../security/middleware.js";
 import { requireRole } from "../security/roles.js";
 import { PrismaClient } from "@prisma/client";
+import { readJson } from "../storage.js";
 
 const router = Router();
 
@@ -138,7 +139,7 @@ router.post("/admin/verificaciones/:logId/approve", authRequired, requireRole("A
 });
 
 // ─── GET /api/admin/ratings ──────────────────────────────────────────────────
-router.get("/admin/ratings", authRequired, requireRole("ADMIN"), async (req, res) => {
+router.get("/admin/ratings", authRequired, requireRole("ADMIN"), async (_req, res) => {
   const prisma = new PrismaClient();
   try {
     const ratings = await (prisma.rating as any).findMany({
@@ -146,7 +147,11 @@ router.get("/admin/ratings", authRequired, requireRole("ADMIN"), async (req, res
       take: 100,
     });
     return res.json({ ok: true, ratings });
-  } catch(e: any) { return res.status(500).json({ ok: false, error: e.message }); }
+  } catch {
+    // JSON storage fallback
+    const ratings = readJson<any[]>("provider_ratings", []).slice(0, 100);
+    return res.json({ ok: true, ratings });
+  }
 });
 
 // ─── GET /api/admin/solicitudes ──────────────────────────────────────────────

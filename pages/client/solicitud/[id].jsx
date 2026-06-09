@@ -25,7 +25,7 @@ const STATUS = {
 export default function ClientSolicitudPage() {
   const router = useRouter();
   const { id } = router.query;
-  const { user, apiRequest } = useAuth();
+  const { user, apiRequest, isReady } = useAuth();
   const [req,       setReq]       = useState(null);
   const [loading,   setLoading]   = useState(true);
   const [confirming, setConfirm]  = useState(false);
@@ -35,13 +35,20 @@ export default function ClientSolicitudPage() {
   const [rated,      setRated]    = useState(false);
   const [err,        setErr]      = useState(null);
 
+  // Auth guard — only authenticated CLIENTs can view their requests
   useEffect(() => {
-    if (!id) return;
+    if (!isReady) return;
+    if (!user) { router.replace("/auth/login?role=CLIENT"); return; }
+    if (user.role !== "CLIENT" && user.role !== "ADMIN") { router.replace("/"); return; }
+  }, [isReady, user, router]);
+
+  useEffect(() => {
+    if (!id || !isReady || !user) return;
     apiRequest(`/api/requests/${id}`)
       .then(d => setReq(d.request || null))
       .catch(() => {})
       .finally(() => setLoading(false));
-  }, [id, apiRequest]);
+  }, [id, isReady, user, apiRequest]);
 
   const confirmWork = async () => {
     setConfirm(true); setErr(null);
@@ -74,6 +81,7 @@ export default function ClientSolicitudPage() {
     } catch(e) { setErr(e.message); }
   };
 
+  if (!isReady || !user) return null;
   if (loading) return <><NavBar /><div style={{ padding:60, textAlign:"center", color:F }}>Cargando...</div></>;
   if (!req)    return <><NavBar /><div style={{ padding:60, textAlign:"center" }}>Solicitud no encontrada. <Link href="/client/dashboard" style={{ color:V }}>Volver</Link></div></>;
 

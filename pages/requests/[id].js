@@ -28,7 +28,7 @@ export default function RequestPage() {
   }, [isReady, user]);
 
   useEffect(() => {
-    if (!id || !isReady) return;
+    if (!id || !isReady || !user) return;
     setLoading(true);
     setError(null);
 
@@ -49,7 +49,7 @@ export default function RequestPage() {
         setMaterialsError(null);
       })
       .catch((e) => setMaterialsError(e.message));
-  }, [id, isReady]);
+  }, [id, isReady, user]);
 
   const accept = async (qid) => {
     setMessage(null);
@@ -73,6 +73,8 @@ export default function RequestPage() {
         .sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()),
     [materials],
   );
+
+  if (!isReady || !user) return null;
 
   return (
     <div>
