@@ -14,16 +14,16 @@ import { useAuth } from "../../contexts/AuthContext";
 const F = "#0D3B1F", V = "#16A34A";
 
 const ADMIN_NAV = [
-  { href: "/admin/dashboard",      label: "KPI generales" },
-  { href: "/admin/users",          label: "Usuarios" },
-  { href: "/admin/verificaciones", label: "Verificaciones" },
-  { href: "/admin/solicitudes",    label: "Solicitudes" },
+  { href: "/admin/dashboard",      label: "📊 Dashboard" },
+  { href: "/admin/verificaciones", label: "🛡️ Verificaciones" },
+  { href: "/admin/users",          label: "👥 Usuarios" },
+  { href: "/admin/solicitudes",    label: "📋 Solicitudes" },
+  { href: "/admin/escrow",         label: "💳 Escrow" },
+  { href: "/admin/ratings",        label: "⭐ Reseñas" },
   { href: "/admin/reclamos",       label: "📝 Reclamos" },
-  { href: "/admin/escrow",         label: "Escrow" },
-  { href: "/admin/ratings",        label: "Calificaciones" },
-  { href: "/admin/chat-alerts",    label: "Chat/Alertas" },
-  { href: "/admin/documentacion",  label: "CMS Docs" },
-  { href: "/admin/reportes",       label: "Reportes" },
+  { href: "/admin/chat-alerts",    label: "🚨 Chat/Alertas" },
+  { href: "/admin/documentacion",  label: "📄 Docs KYC" },
+  { href: "/admin/reportes",       label: "📈 Reportes" },
 ];
 
 export default function AdminDashboard() {

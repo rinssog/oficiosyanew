@@ -20,8 +20,9 @@ const ADMIN_NAV = [
   { href: "/admin/escrow",         label: "💳 Escrow" },
   { href: "/admin/ratings",        label: "⭐ Reseñas" },
   { href: "/admin/reclamos",       label: "📝 Reclamos" },
-  { href: "/admin/chat-alerts",    label: "🚨 Chat Alerts" },
-  { href: "/admin/documentacion",  label: "📄 Docs" },
+  { href: "/admin/chat-alerts",    label: "🚨 Chat/Alertas" },
+  { href: "/admin/documentacion",  label: "📄 Docs KYC" },
+  { href: "/admin/reportes",       label: "📈 Reportes" },
 ];
 
 const SEV_MAP = {
