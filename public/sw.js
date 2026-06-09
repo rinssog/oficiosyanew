@@ -3,10 +3,9 @@
  * Estrategia: Network First → Cache → Offline fallback
  */
 
-const CACHE_NAME = "oficiosya-v2";
+const CACHE_NAME = "oficiosya-v3";
 const OFFLINE_URL = "/offline";
 
-// Solo cachear recursos que existen — sin PNGs que no están en /public
 const STATIC_ASSETS = [
   "/",
   "/offline",
@@ -14,6 +13,9 @@ const STATIC_ASSETS = [
   "/auth/register",
   "/manifest.json",
   "/favicon.svg",
+  "/icon-192.png",
+  "/icon-512.png",
+  "/apple-touch-icon.png",
 ];
 
 // ─── INSTALL ──────────────────────────────────────────────────────────────────
@@ -86,12 +88,12 @@ self.addEventListener("push", (event) => {
   } catch {
     return;
   }
-  const { title = "OficiosYa", body = "", url = "/", icon = "/favicon.svg" } = payload;
+  const { title = "OficiosYa", body = "", url = "/", icon = "/icon-192.png" } = payload;
   event.waitUntil(
     self.registration.showNotification(title, {
       body,
       icon,
-      badge: "/favicon.svg",
+      badge: "/icon-192.png",
       data: { url },
       vibrate: [100, 50, 100],
       actions: [
