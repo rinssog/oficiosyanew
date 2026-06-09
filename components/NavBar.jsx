@@ -89,7 +89,7 @@ const getDashboard = (role) => {
 };
 
 export default function NavBar() {
-  const { user, logout, isReady } = useAuth();
+  const { user, logout, isReady, apiRequest } = useAuth();
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [unread, setUnread] = useState(0);
@@ -108,22 +108,24 @@ export default function NavBar() {
     return () => document.removeEventListener("mousedown", handler);
   }, [open]);
 
-  // Poll unread chat messages
+  // Poll unread chat messages (using apiRequest so token is auto-injected)
   useEffect(() => {
     if (!user) return;
     const fetchUnread = async () => {
       try {
-        const res = await fetch(`${API_BASE}/api/chat/threads?unread=true`, {
-          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
-        });
-        const data = await res.json();
-        if (data.ok) setUnread(data.totalUnread || 0);
+        const data = await apiRequest("/api/chat/threads");
+        if (data?.ok) {
+          const total = (data.threads || []).reduce((s, t) => {
+            return s + (user.role === "PROVIDER" ? (t.unreadProvider || 0) : (t.unreadClient || 0));
+          }, 0);
+          setUnread(total);
+        }
       } catch {}
     };
     fetchUnread();
     const interval = setInterval(fetchUnread, 30000);
     return () => clearInterval(interval);
-  }, [user]);
+  }, [user, apiRequest]);
 
   const handleLogout = () => {
     logout();
@@ -220,7 +222,7 @@ export default function NavBar() {
                   Ingresar
                 </button>
               </Link>
-              <Link href="/auth/registro">
+              <Link href="/auth/register">
                 <button style={{
                   background: "linear-gradient(135deg,#16A34A,#0D3B1F)", color: "#fff",
                   borderRadius: 24, padding: "8px 18px", border: "none",
@@ -275,9 +277,14 @@ export default function NavBar() {
             <Link href="/chat" className="drawer-link">
               💬 Chat {unread > 0 && <span className="badge badge-red" style={{ marginLeft: 8 }}>{unread}</span>}
             </Link>
-            {user.role !== "ADMIN" && (
-              <Link href={user.role === "CLIENT" ? "/client/reclamos" : "/client/reclamos"} className="drawer-link">
+            {user.role === "CLIENT" && (
+              <Link href="/client/reclamos" className="drawer-link">
                 📋 Mis reclamos
+              </Link>
+            )}
+            {user.role === "PROVIDER" && (
+              <Link href="/providers/solicitudes" className="drawer-link">
+                📋 Solicitudes
               </Link>
             )}
             <button
@@ -291,7 +298,7 @@ export default function NavBar() {
         ) : (
           <>
             <Link href="/auth/login" className="drawer-link">🔐 Ingresar</Link>
-            <Link href="/auth/registro" className="drawer-link">✨ Registrarse</Link>
+            <Link href="/auth/register" className="drawer-link">✨ Registrarse</Link>
           </>
         )}
       </div>
