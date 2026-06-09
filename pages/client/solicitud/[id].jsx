@@ -173,7 +173,7 @@ export default function ClientSolicitudPage() {
           {req.providerId && (
             <div style={{ background:"#fff", border:"1.5px solid #D4E0D6", borderRadius:16, padding:20 }}>
               <h3 style={{ margin:"0 0 14px", color:F, fontFamily:"Georgia,serif" }}>Chat con el prestador</h3>
-              <ChatWindow requestId={id} toId={req.provider?.userId} toName={req.provider?.companyName || "Prestador"} />
+              <ChatWindow requestId={id} toName={req.provider?.companyName || "Prestador"} />
             </div>
           )}
         </div>

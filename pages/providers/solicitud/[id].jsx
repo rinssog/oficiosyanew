@@ -170,7 +170,7 @@ export default function ProviderSolicitudPage() {
 
           {tab==="chat" && (
             <div style={{ background:"#fff", border:"1.5px solid #D4E0D6", borderRadius:16, padding:20 }}>
-              <ChatWindow requestId={id} toId={req.clientId} toName={req.client?.name || "Cliente"} />
+              <ChatWindow requestId={id} toName={req.client?.name || "Cliente"} />
             </div>
           )}
 
