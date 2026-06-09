@@ -9,7 +9,7 @@ import { Router } from "express";
 import { authRequired } from "../security/middleware.js";
 import { requireRole } from "../security/roles.js";
 import { PrismaClient } from "@prisma/client";
-import { readJson } from "../storage.js";
+import { readJson, writeJson, generateId } from "../storage.js";
 
 const router = Router();
 function getAuth(req: any) { return (req.auth ?? req.user ?? {}) as { sub?: string; role?: string }; }
@@ -51,7 +51,40 @@ router.post("/ratings", authRequired, async (req, res) => {
     });
 
     return res.status(201).json({ ok:true, rating });
-  } catch(e: any) { return res.status(500).json({ ok:false, error: e.message }); }
+  } catch {
+    // JSON storage fallback
+    const requests = readJson<any[]>("requests", []);
+    const request = requests.find((r: any) => r.id === requestId);
+    if (!request) return res.status(404).json({ ok:false, error:"Solicitud no encontrada" });
+    if (request.status !== "DONE") return res.status(400).json({ ok:false, error:"Solo podés calificar trabajos completados" });
+    if (request.clientId !== clientId) return res.status(403).json({ ok:false, error:"No sos el cliente de esta solicitud" });
+
+    const allRatings = readJson<any[]>("provider_ratings", []);
+    const existing = allRatings.find((r: any) => r.requestId === requestId);
+    if (existing) return res.status(409).json({ ok:false, error:"Ya calificaste este trabajo" });
+
+    const q = Number(quality)||5, p = Number(punctuality)||5, c = Number(communication)||5;
+    const average = (q*0.7 + p*0.2 + c*0.1);
+    const rating: any = {
+      id: generateId("rating_"), requestId, providerId, clientId: clientId || "",
+      quality: q, punctuality: p, communication: c, average,
+      comment: comment || null, createdAt: new Date().toISOString(),
+    };
+    allRatings.push(rating);
+    writeJson("provider_ratings", allRatings);
+
+    // Update provider average in JSON
+    const providers = readJson<any[]>("providers", []);
+    const pIdx = providers.findIndex((p: any) => p.id === providerId);
+    if (pIdx >= 0) {
+      const provRatings = allRatings.filter((r: any) => r.providerId === providerId);
+      const avg = provRatings.reduce((a: number, r: any) => a + r.average, 0) / provRatings.length;
+      providers[pIdx].rating = Number(avg.toFixed(2));
+      providers[pIdx].reviewCount = provRatings.length;
+      writeJson("providers", providers);
+    }
+    return res.status(201).json({ ok:true, rating });
+  }
 });
 
 // ─── GET /api/ratings/provider/:providerId ────────────────────────────────────
@@ -80,7 +113,7 @@ router.get("/ratings/provider/:providerId", async (req, res) => {
 // ─── PUT /api/ratings/:id/response — Prestador responde ──────────────────────
 router.put("/ratings/:id/response", authRequired, async (req, res) => {
   const prisma = new PrismaClient();
-  const { sub: userId, role } = getAuth(req);
+  const { sub: userId } = getAuth(req);
   const { response } = req.body || {};
   if (!response?.trim()) return res.status(400).json({ ok:false, error:"Respuesta requerida" });
   try {
@@ -90,7 +123,20 @@ router.put("/ratings/:id/response", authRequired, async (req, res) => {
     if (!prov || prov.userId !== userId) return res.status(403).json({ ok:false, error:"Sin permisos" });
     const updated = await prisma.rating.update({ where:{ id: req.params.id }, data:{ response } });
     return res.json({ ok:true, rating: updated });
-  } catch(e: any) { return res.status(500).json({ ok:false, error: e.message }); }
+  } catch {
+    // JSON storage fallback
+    const ratings = readJson<any[]>("provider_ratings", []);
+    const idx = ratings.findIndex((r: any) => r.id === req.params.id);
+    if (idx < 0) return res.status(404).json({ ok:false, error:"Reseña no encontrada" });
+    const rating = ratings[idx];
+    // Verify ownership via provider record
+    const providers = readJson<any[]>("providers", []);
+    const prov = providers.find((p: any) => p.id === rating.providerId);
+    if (!prov || prov.userId !== userId) return res.status(403).json({ ok:false, error:"Sin permisos" });
+    ratings[idx] = { ...rating, response };
+    writeJson("provider_ratings", ratings);
+    return res.json({ ok:true, rating: ratings[idx] });
+  }
 });
 
 // ─── DELETE /api/ratings/:id — Admin elimina reseña ──────────────────────────
@@ -99,7 +145,14 @@ router.delete("/ratings/:id", authRequired, requireRole("ADMIN"), async (req, re
   try {
     await prisma.rating.delete({ where:{ id: req.params.id } });
     return res.json({ ok:true, message:"Reseña eliminada" });
-  } catch(e: any) { return res.status(500).json({ ok:false, error: e.message }); }
+  } catch {
+    // JSON storage fallback
+    const ratings = readJson<any[]>("provider_ratings", []);
+    const filtered = ratings.filter((r: any) => r.id !== req.params.id);
+    if (filtered.length === ratings.length) return res.status(404).json({ ok:false, error:"Reseña no encontrada" });
+    writeJson("provider_ratings", filtered);
+    return res.json({ ok:true, message:"Reseña eliminada" });
+  }
 });
 
 export default router;
