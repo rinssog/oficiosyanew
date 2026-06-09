@@ -65,12 +65,14 @@ export default function LoginPage() {
     setError(null);
     try {
       const result = await login({ email: form.email, password: form.password });
-      const dest = result.user?.role === "PROVIDER"
+      // Redirect to next= param if present (e.g., after auth-guard redirect), else role dashboard
+      const nextParam = router.query.next ? decodeURIComponent(String(router.query.next)) : null;
+      const roleDest = result.user?.role === "PROVIDER"
         ? "/providers/dashboard"
         : result.user?.role === "ADMIN"
         ? "/admin/dashboard"
         : "/client/dashboard";
-      router.push(dest);
+      router.push(nextParam || roleDest);
     } catch (err) {
       setError(err.message || "Credenciales incorrectas. Verificá tu email y contraseña.");
     } finally {
