@@ -20,8 +20,9 @@ export default function Document() {
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <meta name="apple-mobile-web-app-title" content="OficiosYa" />
-        {/* Apple touch icon — usamos el SVG hasta tener PNGs definitivos */}
-        <link rel="apple-touch-icon" href="/favicon.svg" />
+        {/* Apple touch icon PNG */}
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
 
         {/* ─── SEO BASE ─────────────────────────────────────────────── */}
         <meta name="description" content="Plataforma argentina de servicios y oficios. Prestadores verificados, pago protegido y garantía de 30 días." />
@@ -47,6 +48,8 @@ export default function Document() {
         {/* ─── FAVICON ──────────────────────────────────────────────── */}
         <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
         <link rel="icon" href="/favicon.svg" sizes="any" />
+        <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" />
+        <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png" />
 
         {/* ─── FUENTES Google (preconnect + stylesheet) ────────────── */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
