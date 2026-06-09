@@ -35,7 +35,7 @@ export default function Document() {
         <meta property="og:site_name"   content="OficiosYa" />
         <meta property="og:title"       content="OficiosYa — El profesional que necesitás, ya." />
         <meta property="og:description" content="Prestadores verificados, pago protegido y garantía 30 días." />
-        <meta property="og:image"       content="/og-image.png" />
+        <meta property="og:image"       content="/icon-512.png" />
         <meta property="og:url"         content="https://oficiosya.com.ar" />
         <meta property="og:locale"      content="es_AR" />
 
@@ -43,7 +43,7 @@ export default function Document() {
         <meta name="twitter:card"        content="summary_large_image" />
         <meta name="twitter:title"       content="OficiosYa" />
         <meta name="twitter:description" content="Prestadores verificados, pago protegido y garantía 30 días." />
-        <meta name="twitter:image"       content="/og-image.png" />
+        <meta name="twitter:image"       content="/icon-512.png" />
 
         {/* ─── FAVICON ──────────────────────────────────────────────── */}
         <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
