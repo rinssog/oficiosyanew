@@ -238,13 +238,46 @@ router.post("/mp/subscriptions/:id/cancel", authRequired, async (req, res) => {
 
 // ─── Rutas legacy compatibles ─────────────────────────────────────────────────
 router.get("/users/:userId/subscriptions", authRequired, async (req, res) => {
+  const auth = (req as any).auth ?? {};
+  // Users can only read their own subscriptions; ADMIN can read any
+  if (auth.sub !== req.params.userId && auth.role !== "ADMIN") {
+    return res.status(403).json({ ok: false, error: "Sin acceso" });
+  }
   try {
     const prisma = new PrismaClient();
     const subs = await prisma.userSubscription.findMany({ where: { userId: req.params.userId }, orderBy: { startedAt: "desc" }, include: { plan: true } });
-    res.json({ ok: true, subscriptions: subs });
-  } catch (e: any) {
-    res.status(500).json({ ok: false, error: e.message });
+    return res.json({ ok: true, subscriptions: subs });
+  } catch {
+    // JSON storage fallback
+    const subs = readJson<any[]>("user_subscriptions", []).filter((s: any) => s.userId === req.params.userId);
+    return res.json({ ok: true, subscriptions: subs });
   }
+});
+
+// ─── POST /api/users/:userId/subscriptions — activate plan (JSON fallback) ──
+router.post("/users/:userId/subscriptions", authRequired, async (req, res) => {
+  const auth = (req as any).auth ?? {};
+  if (auth.sub !== req.params.userId && auth.role !== "ADMIN") {
+    return res.status(403).json({ ok: false, error: "Sin acceso" });
+  }
+  const { planId } = req.body || {};
+  if (!planId) return res.status(400).json({ ok: false, error: "planId es requerido" });
+
+  const now = new Date().toISOString();
+  const subs = readJson<any[]>("user_subscriptions", []);
+  // Deactivate existing active subscriptions for this user
+  subs.forEach((s: any) => { if (s.userId === req.params.userId && s.status === "ACTIVE") s.status = "CANCELLED"; });
+  const newSub = {
+    id: generateId("sub_"),
+    userId: req.params.userId,
+    planId,
+    status: "ACTIVE",
+    startedAt: now,
+    createdAt: now,
+  };
+  subs.push(newSub);
+  writeJson("user_subscriptions", subs);
+  return res.status(201).json({ ok: true, subscription: newSub });
 });
 
 export default router;
