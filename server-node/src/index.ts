@@ -51,7 +51,15 @@ const authLimiter = rateLimit({
 });
 
 app.use(limiter);
-const allowed = (process.env.CORS_ORIGINS || "http://localhost:3000")
+// Default includes both localhost (dev) and production Vercel URL
+const CORS_DEFAULT = [
+  "http://localhost:3000",
+  "https://oficiosya-theta.vercel.app",
+  "https://oficiosya.com.ar",
+  "https://www.oficiosya.com.ar",
+].join(",");
+
+const allowed = (process.env.CORS_ORIGINS || CORS_DEFAULT)
   .split(",")
   .map((s) => s.trim())
   .filter(Boolean);

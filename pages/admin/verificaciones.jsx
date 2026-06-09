@@ -29,7 +29,7 @@ const STATUS_LABELS = { PENDING: "⏳ Pendiente", SUBMITTED: "📬 Enviado", APP
 const STATUS_COLORS = { PENDING: "#6B7280", SUBMITTED: "#1D4ED8", APPROVED: "#16A34A", REJECTED: "#DC2626" };
 
 export default function AdminVerificaciones() {
-  const { user, token, isReady } = useAuth();
+  const { user, apiRequest, isReady } = useAuth();
   const router = useRouter();
   const [docs, setDocs]       = useState([]);
   const [kyc, setKyc]         = useState([]);
@@ -45,14 +45,13 @@ export default function AdminVerificaciones() {
 
   async function loadData() {
     setLoading(true);
-    const headers = token ? { Authorization: `Bearer ${token}` } : {};
     try {
       const [docsRes, kycRes] = await Promise.allSettled([
-        fetch(`${API_BASE}/api/admin/documents/pending`, { headers }).then(r => r.json()),
-        fetch(`${API_BASE}/api/admin/verificaciones`,    { headers }).then(r => r.json()),
+        apiRequest("/api/admin/documents/pending"),
+        apiRequest("/api/admin/verificaciones"),
       ]);
-      if (docsRes.status === "fulfilled" && docsRes.value.ok) setDocs(docsRes.value.pending || []);
-      if (kycRes.status  === "fulfilled" && kycRes.value.ok)  setKyc(kycRes.value.items || []);
+      if (docsRes.status === "fulfilled" && docsRes.value?.ok !== false) setDocs(docsRes.value?.pending || []);
+      if (kycRes.status  === "fulfilled" && kycRes.value?.ok  !== false) setKyc(kycRes.value?.items || []);
     } catch {}
     setLoading(false);
   }
@@ -61,11 +60,9 @@ export default function AdminVerificaciones() {
     setBusy(b => ({ ...b, [docId]: true }));
     setMsg(null);
     try {
-      const headers = { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) };
-      const res = await fetch(`${API_BASE}/api/admin/documents/${docId}/status`, {
-        method: "POST", headers, body: JSON.stringify({ status }),
+      const data = await apiRequest(`/api/admin/documents/${docId}/status`, {
+        method: "POST", body: JSON.stringify({ status }),
       });
-      const data = await res.json();
       setMsg(data.ok ? `✅ Documento ${status.toLowerCase()}` : `❌ ${data.error}`);
       if (data.ok) loadData();
     } catch (e) { setMsg(`❌ Error: ${e.message}`); }
@@ -76,11 +73,9 @@ export default function AdminVerificaciones() {
     setBusy(b => ({ ...b, [logId]: true }));
     setMsg(null);
     try {
-      const headers = { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) };
-      const res = await fetch(`${API_BASE}/api/admin/verificaciones/${logId}/approve`, {
-        method: "POST", headers, body: JSON.stringify({ approved }),
+      const data = await apiRequest(`/api/admin/verificaciones/${logId}/approve`, {
+        method: "POST", body: JSON.stringify({ approved }),
       });
-      const data = await res.json();
       setMsg(data.ok ? (approved ? "✅ Prestador verificado" : "❌ Verificación rechazada") : `❌ ${data.error}`);
       if (data.ok) loadData();
     } catch (e) { setMsg(`❌ Error: ${e.message}`); }

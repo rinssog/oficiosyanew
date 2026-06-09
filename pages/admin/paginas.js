@@ -1,244 +1,222 @@
+/**
+ * pages/admin/paginas.js — CMS y planes de suscripción
+ * Migrado a useAuth + apiRequest (sin campo manual de token)
+ */
 import { useEffect, useMemo, useState } from "react";
 import Head from "next/head";
+import { useRouter } from "next/router";
 import NavBar from "../../components/NavBar";
 import Footer from "../../components/Footer";
 import DashboardShell from "../../components/DashboardShell";
+import { useAuth } from "../../contexts/AuthContext";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:4000";
-const STORAGE_KEY = "oficiosya_admin_token";
+const F = "#0D3B1F", V = "#16A34A";
+
+const ADMIN_NAV = [
+  { href: "/admin/dashboard",      label: "KPI generales" },
+  { href: "/admin/users",          label: "Usuarios" },
+  { href: "/admin/verificaciones", label: "Verificaciones" },
+  { href: "/admin/solicitudes",    label: "Solicitudes" },
+  { href: "/admin/reclamos",       label: "📝 Reclamos" },
+  { href: "/admin/escrow",         label: "Escrow" },
+  { href: "/admin/ratings",        label: "Calificaciones" },
+  { href: "/admin/chat-alerts",    label: "Chat/Alertas" },
+  { href: "/admin/documentacion",  label: "CMS Docs" },
+  { href: "/admin/reportes",       label: "Reportes" },
+];
 
 export default function AdminCms() {
+  const { user, apiRequest, isReady } = useAuth();
+  const router = useRouter();
+
   const [sections, setSections] = useState([]);
-  const [plans, setPlans] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [message, setMessage] = useState(null);
-  const [savingPlan, setSavingPlan] = useState(null);
-  const [adminToken, setAdminToken] = useState("");
+  const [plans,    setPlans]    = useState([]);
+  const [loading,  setLoading]  = useState(true);
+  const [error,    setError]    = useState(null);
+  const [message,  setMessage]  = useState(null);
+  const [saving,   setSaving]   = useState(null);
 
   useEffect(() => {
-    if (typeof window === "undefined") return;
-    try {
-      const stored = window.localStorage.getItem(STORAGE_KEY);
-      if (stored) {
-        setAdminToken(stored);
-      }
-    } catch (err) {
-      console.warn("admin token storage read failed", err);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    try {
-      if (adminToken) {
-        window.localStorage.setItem(STORAGE_KEY, adminToken);
-      } else {
-        window.localStorage.removeItem(STORAGE_KEY);
-      }
-    } catch (err) {
-      console.warn("admin token storage write failed", err);
-    }
-  }, [adminToken]);
-
-  useEffect(() => {
-    let active = true;
-    const load = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const [sectionsRes, plansRes] = await Promise.all([
-          fetch(`${API_BASE}/api/admin/cms/sections`).then((r) => r.json()),
-          fetch(`${API_BASE}/api/admin/plans`).then((r) => r.json()),
-        ]);
-        if (!active) return;
-        if (sectionsRes.ok === false) throw new Error(sectionsRes.error || "No se pudo cargar el CMS");
-        if (plansRes.ok === false) throw new Error(plansRes.error || "No se pudieron cargar los planes");
-        setSections(sectionsRes.sections || []);
-        setPlans((plansRes.plans || []).map((plan) => ({ ...plan })));
-      } catch (err) {
-        if (active) setError(err.message);
-      } finally {
-        if (active) setLoading(false);
-      }
-    };
+    if (!isReady) return;
+    if (!user) { router.replace("/auth/login"); return; }
+    if (user.role !== "ADMIN") { router.replace("/"); return; }
     load();
-    return () => {
-      active = false;
-    };
-  }, []);
+  }, [isReady, user]);
 
-  const navItems = useMemo(
-    () => [
-      { href: "/admin/dashboard", label: "KPI generales" },
-      { href: "/admin/documentacion", label: "Revision de docs" },
-      { href: "/admin/paginas", label: "CMS y landing" },
-      { href: "/admin/reportes", label: "Reportes y SLA" },
-    ],
-    [],
-  );
-
-  const handlePlanChange = (planId, field, value) => {
-    setPlans((prev) => prev.map((plan) => (plan.id === planId ? { ...plan, [field]: value } : plan)));
-  };
-
-  const handlePlanSave = async (planId) => {
-    const plan = plans.find((p) => p.id === planId);
-    if (!plan) return;
-
-    if (!adminToken) {
-      setError("Ingresa el token administrativo antes de guardar cambios.");
-      return;
+  async function load() {
+    setLoading(true);
+    setError(null);
+    try {
+      const [sectionsRes, plansRes] = await Promise.allSettled([
+        apiRequest("/api/admin/cms/sections"),
+        apiRequest("/api/admin/plans"),
+      ]);
+      if (sectionsRes.status === "fulfilled" && sectionsRes.value?.ok !== false)
+        setSections(sectionsRes.value?.sections || []);
+      if (plansRes.status === "fulfilled" && plansRes.value?.ok !== false)
+        setPlans((plansRes.value?.plans || []).map(p => ({ ...p })));
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
     }
+  }
 
-    setSavingPlan(planId);
+  const handleField = (id, field, value) =>
+    setPlans(prev => prev.map(p => p.id === id ? { ...p, [field]: value } : p));
+
+  async function savePlan(id) {
+    const plan = plans.find(p => p.id === id);
+    if (!plan) return;
+    setSaving(id);
     setMessage(null);
     setError(null);
     try {
-      const res = await fetch(`${API_BASE}/api/admin/plans/${planId}`, {
+      const data = await apiRequest(`/api/admin/plans/${id}`, {
         method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          "x-admin-token": adminToken,
-        },
         body: JSON.stringify({
           priceMonthly: Number(plan.priceMonthly),
           commissionPct: Number(plan.commissionPct),
           leadFee: Number(plan.leadFee),
         }),
       });
-      const data = await res.json();
-      if (!res.ok || data.ok === false) throw new Error(data.error || "No se pudo actualizar el plan");
-      setMessage("Plan actualizado");
+      if (data.ok === false) throw new Error(data.error || "No se pudo actualizar");
+      setMessage(`✅ Plan "${plan.name}" actualizado`);
     } catch (err) {
       setError(err.message);
     } finally {
-      setSavingPlan(null);
+      setSaving(null);
     }
-  };
+  }
+
+  if (!isReady || !user || user.role !== "ADMIN") return null;
 
   return (
     <>
-      <Head>
-        <title>OficiosYa | CMS y landing</title>
-      </Head>
+      <Head><title>CMS y Planes · OficiosYa Admin</title></Head>
       <NavBar />
       <DashboardShell
-        title="CMS y contenido"
-        subtitle="Gestiona versiones de landing, FAQ y recursos visuales."
-        navItems={navItems}
+        title="CMS y Planes"
+        subtitle="Gestión de secciones de landing y precios de suscripción."
+        navItems={ADMIN_NAV}
         active="/admin/paginas"
+        rightSlot={<button className="btn btn-ghost btn-sm" onClick={load}>🔄 Recargar</button>}
       >
-        {error && <p style={{ color: "#c62828" }}>{error}</p>}
-        {message && <p style={{ color: "#0f6a3b" }}>{message}</p>}
-        {loading && <p style={{ color: "#555" }}>Cargando secciones y planes...</p>}
+        {error   && <div className="alert alert-danger">{error}</div>}
+        {message && <div className="alert alert-success">{message}</div>}
 
-        <section style={{ background: "#fff", borderRadius: 16, border: "1px solid var(--border)", padding: 16, display: "grid", gap: 12, marginBottom: 24 }}>
-          <strong>Token administrativo</strong>
-          <p style={{ margin: 0, color: "#555" }}>
-            Para modificar planes desde el panel administrativo necesitas el mismo token configurado en el backend (variable <code>ADMIN_TOKEN</code>). Escribilo manualmente: nunca lo publiques en el frontend.
-          </p>
-          <input
-            type="text"
-            placeholder="Token administrativo"
-            value={adminToken}
-            onChange={(e) => setAdminToken(e.target.value)}
-            style={{ width: "100%", padding: "8px 12px", borderRadius: 8, border: "1px solid var(--border)" }}
-          />
-        </section>
-
-        {!loading && (
+        {loading ? (
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            {[1,2,3].map(i => <div key={i} className="skeleton" style={{ height: 60, borderRadius: 10 }} />)}
+          </div>
+        ) : (
           <>
-            <section style={{ background: "#fff", borderRadius: "22px", border: "1px solid var(--border)", padding: "24px", display: "grid", gap: "16px" }}>
-              <h2 style={{ margin: 0, fontSize: "1.4rem", color: "var(--primary-700)" }}>Secciones</h2>
-              <table style={{ width: "100%", borderCollapse: "collapse" }}>
-                <thead>
-                  <tr style={{ textAlign: "left", color: "var(--text-soft)" }}>
-                    <th style={{ padding: "12px" }}>Nombre</th>
-                    <th style={{ padding: "12px" }}>Estado</th>
-                    <th style={{ padding: "12px" }}>ltima edicin</th>
-                    <th style={{ padding: "12px" }}>Notas</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {sections.map((section) => (
-                    <tr key={section.id} style={{ borderTop: "1px solid var(--border)" }}>
-                      <td style={{ padding: "12px", color: "var(--primary-700)" }}>{section.name}</td>
-                      <td style={{ padding: "12px" }}>{section.status}</td>
-                      <td style={{ padding: "12px" }}>{section.lastUpdated ? new Date(section.lastUpdated).toLocaleDateString("es-AR") : "-"}</td>
-                      <td style={{ padding: "12px" }}>{section.notes || "-"}</td>
-                    </tr>
-                  ))}
-                  {sections.length === 0 && (
+            {/* Secciones */}
+            <div className="card-flat">
+              <h3 style={{ margin: "0 0 16px", color: F, fontSize: 16, fontWeight: 800 }}>
+                📄 Secciones de contenido ({sections.length})
+              </h3>
+              <div className="table-responsive">
+                <table>
+                  <thead>
                     <tr>
-                      <td colSpan={4} style={{ padding: "12px", color: "#777" }}>No hay secciones configuradas.</td>
+                      <th>Nombre</th>
+                      <th>Estado</th>
+                      <th>Última edición</th>
+                      <th>Notas</th>
                     </tr>
-                  )}
-                </tbody>
-              </table>
-            </section>
-
-            <section style={{ background: "#fff", borderRadius: "22px", border: "1px solid var(--border)", padding: "24px", display: "grid", gap: "16px" }}>
-              <h2 style={{ margin: 0, fontSize: "1.4rem", color: "var(--primary-700)" }}>Planes de suscripcin</h2>
-              <p style={{ margin: 0, color: "#555" }}>Estos planes se muestran en la landing y en /planes. Ajusta valores y comisiones segn estrategia.</p>
-              <div style={{ display: "grid", gap: "18px" }}>
-                {plans.map((plan) => (
-                  <div key={plan.id} style={{ border: "1px solid var(--border)", borderRadius: "16px", padding: "16px", display: "grid", gap: "12px" }}>
-                    <strong style={{ fontSize: "1.1rem", color: "var(--primary-700)" }}>{plan.name}</strong>
-                    <label style={{ display: "grid", gap: 4 }}>
-                      Precio mensual (ARS)
-                      <input
-                        type="number"
-                        value={plan.priceMonthly}
-                        min={0}
-                        onChange={(e) => handlePlanChange(plan.id, "priceMonthly", e.target.value)}
-                        style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "1px solid var(--border)" }}
-                      />
-                    </label>
-                    <label style={{ display: "grid", gap: 4 }}>
-                      Comisin (%)
-                      <input
-                        type="number"
-                        step="0.01"
-                        min={0}
-                        value={plan.commissionPct}
-                        onChange={(e) => handlePlanChange(plan.id, "commissionPct", e.target.value)}
-                        style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "1px solid var(--border)" }}
-                      />
-                    </label>
-                    <label style={{ display: "grid", gap: 4 }}>
-                      Lead fee (ARS)
-                      <input
-                        type="number"
-                        min={0}
-                        value={plan.leadFee}
-                        onChange={(e) => handlePlanChange(plan.id, "leadFee", e.target.value)}
-                        style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "1px solid var(--border)" }}
-                      />
-                    </label>
-                    <button
-                      type="button"
-                      onClick={() => handlePlanSave(plan.id)}
-                      disabled={savingPlan === plan.id}
-                      style={{
-                        alignSelf: "flex-start",
-                        background: "var(--primary)",
-                        color: "#fff",
-                        border: "none",
-                        borderRadius: 10,
-                        padding: "10px 16px",
-                        fontWeight: 600,
-                        cursor: "pointer",
-                        opacity: savingPlan === plan.id ? 0.6 : 1,
-                      }}
-                    >
-                      {savingPlan === plan.id ? "Guardando..." : "Guardar cambios"}
-                    </button>
-                  </div>
-                ))}
-                {plans.length === 0 && <p style={{ color: "#777" }}>No hay planes configurados.</p>}
+                  </thead>
+                  <tbody>
+                    {sections.length === 0 ? (
+                      <tr><td colSpan={4} style={{ padding: 16, color: "var(--text-muted)", textAlign: "center" }}>
+                        Sin secciones configuradas.
+                      </td></tr>
+                    ) : sections.map(s => (
+                      <tr key={s.id}>
+                        <td style={{ fontWeight: 600, color: F }}>{s.name}</td>
+                        <td>{s.status}</td>
+                        <td style={{ color: "var(--text-muted)", fontSize: 12 }}>
+                          {s.lastUpdated ? new Date(s.lastUpdated).toLocaleDateString("es-AR") : "—"}
+                        </td>
+                        <td style={{ color: "var(--text-muted)", fontSize: 12 }}>{s.notes || "—"}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
-            </section>
+            </div>
+
+            {/* Planes */}
+            <div className="card-flat">
+              <h3 style={{ margin: "0 0 4px", color: F, fontSize: 16, fontWeight: 800 }}>
+                💳 Planes de suscripción
+              </h3>
+              <p style={{ margin: "0 0 20px", color: "var(--text-muted)", fontSize: 13 }}>
+                Estos valores se muestran en la landing y en /planes. Ajustá comisiones según estrategia de pricing.
+              </p>
+
+              {plans.length === 0 ? (
+                <p style={{ color: "var(--text-muted)" }}>No hay planes configurados en el sistema.</p>
+              ) : (
+                <div style={{ display: "grid", gap: 16, gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))" }}>
+                  {plans.map(plan => (
+                    <div key={plan.id} style={{ border: "1.5px solid #D4E0D6", borderRadius: 16, padding: 20, display: "flex", flexDirection: "column", gap: 12 }}>
+                      <div style={{ fontWeight: 800, color: F, fontSize: 16 }}>{plan.name}</div>
+
+                      <label style={{ display: "grid", gap: 4, fontSize: 13 }}>
+                        Precio mensual (ARS)
+                        <input
+                          type="number"
+                          value={plan.priceMonthly}
+                          min={0}
+                          onChange={e => handleField(plan.id, "priceMonthly", e.target.value)}
+                          style={{ width: "100%", padding: "8px 12px", borderRadius: 8, border: "1.5px solid #D4E0D6", fontSize: 14 }}
+                        />
+                      </label>
+
+                      <label style={{ display: "grid", gap: 4, fontSize: 13 }}>
+                        Comisión (%)
+                        <input
+                          type="number"
+                          step="0.01"
+                          min={0}
+                          max={100}
+                          value={plan.commissionPct}
+                          onChange={e => handleField(plan.id, "commissionPct", e.target.value)}
+                          style={{ width: "100%", padding: "8px 12px", borderRadius: 8, border: "1.5px solid #D4E0D6", fontSize: 14 }}
+                        />
+                      </label>
+
+                      <label style={{ display: "grid", gap: 4, fontSize: 13 }}>
+                        Lead fee (ARS)
+                        <input
+                          type="number"
+                          min={0}
+                          value={plan.leadFee}
+                          onChange={e => handleField(plan.id, "leadFee", e.target.value)}
+                          style={{ width: "100%", padding: "8px 12px", borderRadius: 8, border: "1.5px solid #D4E0D6", fontSize: 14 }}
+                        />
+                      </label>
+
+                      <button
+                        type="button"
+                        onClick={() => savePlan(plan.id)}
+                        disabled={saving === plan.id}
+                        className="btn btn-primary btn-sm"
+                        style={{ alignSelf: "flex-start", opacity: saving === plan.id ? 0.6 : 1 }}
+                      >
+                        {saving === plan.id ? "Guardando..." : "💾 Guardar"}
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="alert alert-info" style={{ fontSize: 13 }}>
+              💡 Los cambios de precios se reflejan en <strong>/planes</strong> en tiempo real.
+              El token administrativo se valida automáticamente vía tu sesión de ADMIN.
+            </div>
           </>
         )}
       </DashboardShell>
