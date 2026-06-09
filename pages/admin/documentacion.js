@@ -1,91 +1,135 @@
+/**
+ * pages/admin/documentacion.js — Revisión de documentación KYC
+ */
 import { useEffect, useMemo, useState } from "react";
 import Head from "next/head";
+import Link from "next/link";
+import { useRouter } from "next/router";
 import NavBar from "../../components/NavBar";
 import Footer from "../../components/Footer";
 import DashboardShell from "../../components/DashboardShell";
+import { useAuth } from "../../contexts/AuthContext";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:4000";
+const F = "#0D3B1F", V = "#16A34A";
+
+const ADMIN_NAV = [
+  { href: "/admin/dashboard",      label: "KPI generales" },
+  { href: "/admin/users",          label: "Usuarios" },
+  { href: "/admin/verificaciones", label: "Verificaciones" },
+  { href: "/admin/solicitudes",    label: "Solicitudes" },
+  { href: "/admin/reclamos",       label: "📝 Reclamos" },
+  { href: "/admin/escrow",         label: "Escrow" },
+  { href: "/admin/ratings",        label: "Calificaciones" },
+  { href: "/admin/chat-alerts",    label: "Chat/Alertas" },
+  { href: "/admin/documentacion",  label: "CMS Docs" },
+  { href: "/admin/reportes",       label: "Reportes" },
+];
 
 export default function AdminDocs() {
-  const [queue, setQueue] = useState([]);
+  const { user, apiRequest, isReady } = useAuth();
+  const router = useRouter();
+  const [queue,   setQueue]   = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error,   setError]   = useState(null);
 
   useEffect(() => {
-    let active = true;
-    const load = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const res = await fetch(`${API_BASE}/api/admin/documents/pending`);
-        const data = await res.json();
-        if (!active) return;
-        if (data.ok === false) throw new Error(data.error || "No se pudo obtener la cola");
-        setQueue(data.pending || []);
-      } catch (err) {
-        if (active) setError(err.message);
-      } finally {
-        if (active) setLoading(false);
-      }
-    };
+    if (!isReady) return;
+    if (!user) { router.replace("/auth/login"); return; }
+    if (user.role !== "ADMIN") { router.replace("/"); return; }
     load();
-    return () => {
-      active = false;
-    };
-  }, []);
+  }, [isReady, user]);
+
+  async function load() {
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await apiRequest("/api/admin/documents/pending");
+      if (data.ok === false) throw new Error(data.error || "No se pudo obtener la cola");
+      setQueue(data.pending || []);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }
 
   const navItems = useMemo(() => [
-    { href: "/admin/dashboard", label: "KPI generales" },
-    { href: "/admin/documentacion", label: "Revision de docs", badge: queue.length ? String(queue.length) : undefined },
-    { href: "/admin/paginas", label: "CMS y landing" },
-    { href: "/admin/reportes", label: "Reportes y SLA" },
+    ...ADMIN_NAV.slice(0, 2),
+    { ...ADMIN_NAV[2], badge: queue.length ? String(queue.length) : undefined },
+    ...ADMIN_NAV.slice(3),
   ], [queue.length]);
+
+  if (!isReady || !user || user.role !== "ADMIN") return null;
 
   return (
     <>
-      <Head>
-        <title>OficiosYa | Revision documentacion</title>
-      </Head>
+      <Head><title>Documentación KYC · OficiosYa Admin</title></Head>
       <NavBar />
       <DashboardShell
-        title="Revision de documentacion"
-        subtitle="Backoffice para aprobar, rechazar u observar archivos cargados por prestadores."
+        title="Revisión de documentación"
+        subtitle="Cola de KYC — aprobar, rechazar u observar archivos de prestadores."
         navItems={navItems}
         active="/admin/documentacion"
+        rightSlot={<button className="btn btn-ghost btn-sm" onClick={load}>🔄</button>}
       >
-        {error && <p style={{ color: "#c62828" }}>{error}</p>}
-        {loading && <p style={{ color: "#555" }}>Cargando cola de revision...</p>}
+        {error && <div className="alert alert-danger">{error}</div>}
 
-        {!loading && (
-          <section style={{ background: "#fff", borderRadius: "22px", border: "1px solid var(--border)", padding: "24px", display: "grid", gap: "16px" }}>
-            <h2 style={{ margin: 0, fontSize: "1.4rem", color: "var(--primary-700)" }}>Cola de revision</h2>
-            <table style={{ width: "100%", borderCollapse: "collapse" }}>
-              <thead>
-                <tr style={{ textAlign: "left", color: "var(--text-soft)" }}>
-                  <th style={{ padding: "12px" }}>Prestador</th>
-                  <th style={{ padding: "12px" }}>Documento</th>
-                  <th style={{ padding: "12px" }}>Estado</th>
-                  <th style={{ padding: "12px" }}>Enviado</th>
-                </tr>
-              </thead>
-              <tbody>
-                {queue.map((item) => (
-                  <tr key={`${item.providerId}-${item.type || "doc"}`} style={{ borderTop: "1px solid var(--border)" }}>
-                    <td style={{ padding: "12px", color: "var(--primary-700)" }}>{item.providerId}</td>
-                    <td style={{ padding: "12px" }}>{item.label}</td>
-                    <td style={{ padding: "12px" }}>{item.status}</td>
-                    <td style={{ padding: "12px" }}>{item.uploadedAt ? new Date(item.uploadedAt).toLocaleDateString("es-AR") : "-"}</td>
-                  </tr>
-                ))}
-                {queue.length === 0 && (
-                  <tr>
-                    <td colSpan={4} style={{ padding: "12px", color: "#777" }}>No hay documentos pendientes.</td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </section>
+        {loading ? (
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            {[1,2,3].map(i => <div key={i} className="skeleton" style={{ height: 60, borderRadius: 10 }} />)}
+          </div>
+        ) : (
+          <div className="card-flat">
+            <h3 style={{ margin: "0 0 16px", color: F, fontSize: 16, fontWeight: 800 }}>
+              Cola de revisión — {queue.length} pendiente{queue.length !== 1 ? "s" : ""}
+            </h3>
+            {queue.length === 0 ? (
+              <div style={{ textAlign: "center", padding: "32px 0", color: "var(--text-muted)" }}>
+                ✅ Sin documentos pendientes de revisión.
+              </div>
+            ) : (
+              <div className="table-responsive">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Prestador</th>
+                      <th>Documento</th>
+                      <th>Estado</th>
+                      <th>Enviado</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {queue.map(item => (
+                      <tr key={`${item.providerId}-${item.type || "doc"}`}>
+                        <td style={{ fontWeight: 600, color: F }}>{item.providerId?.slice(0, 14) || "—"}</td>
+                        <td>{item.label || item.type || "—"}</td>
+                        <td>
+                          <span style={{ background: "#FFFBEB", color: "#92400E", borderRadius: 20, padding: "2px 10px", fontSize: 11, fontWeight: 700 }}>
+                            {item.status}
+                          </span>
+                        </td>
+                        <td style={{ color: "var(--text-muted)", fontSize: 12 }}>
+                          {item.uploadedAt ? new Date(item.uploadedAt).toLocaleDateString("es-AR") : "—"}
+                        </td>
+                        <td>
+                          <Link href={`/admin/verificaciones?providerId=${item.providerId}`}>
+                            <button className="btn btn-primary btn-sm">Revisar →</button>
+                          </Link>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
         )}
+
+        <div className="alert alert-info" style={{ fontSize: 13 }}>
+          💡 Hacé click en "Revisar" para ver todos los documentos del prestador, aprobar o rechazar con nota.
+          Los prestadores reciben notificación por email automáticamente.
+        </div>
       </DashboardShell>
       <Footer />
     </>
