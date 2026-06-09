@@ -56,7 +56,7 @@ router.get("/admin/metrics", adminTokenRequired, (_req, res) => {
   return res.json({ ok: true, metrics });
 });
 
-router.get("/admin/documents/pending", async (_req, res) => {
+router.get("/admin/documents/pending", adminTokenRequired, async (_req, res) => {
   const repos = getRepos();
   if (repos.documents) {
     const pending = await repos.documents.listPending();
@@ -98,7 +98,7 @@ router.post("/admin/documents/:documentId/status", adminTokenRequired, async (re
   }
 });
 
-router.get("/admin/plans", async (_req, res) => {
+router.get("/admin/plans", adminTokenRequired, async (_req, res) => {
   const repos = getRepos();
   if (repos.plans) {
     const plans = await repos.plans.list();
@@ -127,7 +127,7 @@ router.put("/admin/plans/:planId", adminTokenRequired, async (req, res) => {
   return res.json({ ok: true, plan: plans[idx] });
 });
 
-router.get("/admin/cms/sections", (_req, res) => {
+router.get("/admin/cms/sections", adminTokenRequired, (_req, res) => {
   const sections = readJson("cms_sections", []);
   return res.json({ ok: true, sections });
 });
@@ -142,18 +142,21 @@ router.put("/admin/cms/sections/:sectionId", adminTokenRequired, (req, res) => {
   return res.json({ ok: true, section: sections[idx] });
 });
 
-router.get("/admin/metrics/export", (_req, res) => {
+router.get("/admin/metrics/export", adminTokenRequired, (_req, res) => {
   const metrics = readJson<Record<string, unknown>>("admin_metrics_snapshot", {});
   const now = new Date().toISOString();
   const rows = [["metric", "value"], ["generated_at", now], ...Object.entries(metrics)];
-  const csv = rows
-    .map((row) => row.map((cell) => "").join(","))
-    .join("\n");
+  const escapeCell = (v: unknown) => {
+    const s = String(v ?? "");
+    return s.includes(",") || s.includes('"') || s.includes("\n") ? `"${s.replace(/"/g, '""')}"` : s;
+  };
+  const csv = rows.map((row) => row.map(escapeCell).join(",")).join("\n");
   res.setHeader("Content-Type", "text/csv");
+  res.setHeader("Content-Disposition", `attachment; filename="metricas-${now.slice(0,10)}.csv"`);
   res.send(csv);
 });
 
-router.get("/admin/quotes/flagged", (_req, res) => {
+router.get("/admin/quotes/flagged", adminTokenRequired, (_req, res) => {
   const quotes = readJson<any[]>("quotes", []);
   const flagged = quotes.filter((quote) => quote.flagged);
   res.json({ ok: true, quotes: flagged });
@@ -171,21 +174,21 @@ router.post("/admin/quotes/:quoteId/resolve", adminTokenRequired, (req, res) => 
   res.json({ ok: true, quote });
 });
 
-router.get("/admin/escrow", (_req, res) => {
+router.get("/admin/escrow", adminTokenRequired, (_req, res) => {
   const records = readJson<any[]>("escrow_records", []).sort(
     (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
   );
   res.json({ ok: true, records });
 });
 
-router.get("/admin/push/queue", (_req, res) => {
+router.get("/admin/push/queue", adminTokenRequired, (_req, res) => {
   const queue = readJson<any[]>("provider_push_queue", []).sort(
     (a, b) => new Date(b.enqueuedAt).getTime() - new Date(a.enqueuedAt).getTime(),
   );
   res.json({ ok: true, queue });
 });
 
-router.get("/admin/cancellations", (_req, res) => {
+router.get("/admin/cancellations", adminTokenRequired, (_req, res) => {
   const stats = readJson<any[]>("cancellation_stats", []).sort(
     (a, b) => (b.cancellations || 0) - (a.cancellations || 0),
   );

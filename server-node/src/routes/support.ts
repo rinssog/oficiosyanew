@@ -1,6 +1,7 @@
 import { Router } from "express";
 
 import { readJson, writeJson, generateId } from "../storage.js";
+import { adminTokenRequired } from "../security/middleware.js";
 
 const router = Router();
 
@@ -25,14 +26,14 @@ router.post("/support/tickets", (req, res) => {
   res.json({ ok: true, ticket });
 });
 
-router.get("/admin/support/tickets", (_req, res) => {
+router.get("/admin/support/tickets", adminTokenRequired, (_req, res) => {
   const tickets = readJson<any[]>("support_tickets", []).sort(
     (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
   );
   res.json({ ok: true, tickets });
 });
 
-router.patch("/admin/support/tickets/:id", (req, res) => {
+router.patch("/admin/support/tickets/:id", adminTokenRequired, (req, res) => {
   const tickets = readJson<any[]>("support_tickets", []);
   const idx = tickets.findIndex((ticket) => ticket.id === req.params.id);
   if (idx < 0) return res.status(404).json({ ok: false, error: "Ticket no encontrado" });
