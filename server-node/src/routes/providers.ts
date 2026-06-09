@@ -725,9 +725,7 @@ router.get("/providers/search", (req, res) => {
       ...service,
       catalog: catalogItem,
     });
-    return;
-
- acc;
+    return acc;
   }, [] as any[]);
 
   res.json({ ok: true, results });

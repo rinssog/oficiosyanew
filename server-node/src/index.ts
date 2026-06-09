@@ -26,6 +26,8 @@ import ratingsRouter from "./routes/ratings.js";
 import pushRouter from "./routes/pushNotifications.js";
 import adminDashRouter from "./routes/adminDashboard.js";
 import claimsRouter from "./routes/claims.js";
+import privacyRouter from "./routes/privacy.js";
+import supportRouter from "./routes/support.js";
 import { seedAll, seedInitialUser } from "./services/seeding.js";
 
 import { logger } from "./utils/logger.js";
@@ -109,6 +111,8 @@ app.use("/api", ratingsRouter);
 app.use("/api", pushRouter);
 app.use("/api", adminDashRouter);
 app.use("/api", claimsRouter);
+app.use("/api", privacyRouter);
+app.use("/api", supportRouter);
 
 app.get("/api/health", (_req, res) => {
   res.json({ ok: true, status: "healthy", timestamp: new Date().toISOString() });
