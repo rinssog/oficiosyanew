@@ -83,8 +83,11 @@ router.post("/claims", authRequired, (req, res) => {
   const { requestId, category, description, accusedId } = req.body;
   if (!requestId)   return res.status(400).json({ ok: false, error: "requestId es requerido" });
   if (!category)    return res.status(400).json({ ok: false, error: "category es requerida" });
-  if (!description || description.trim().length < 20) {
+  if (!description || typeof description !== "string" || description.trim().length < 20) {
     return res.status(400).json({ ok: false, error: "La descripción debe tener al menos 20 caracteres" });
+  }
+  if (description.length > 3000) {
+    return res.status(400).json({ ok: false, error: "La descripción no puede superar los 3000 caracteres" });
   }
 
   const VALID_CATEGORIES: ClaimCategory[] = [

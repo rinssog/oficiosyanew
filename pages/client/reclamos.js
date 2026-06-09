@@ -19,6 +19,7 @@ const navItems = [
   { href: "/client/contratos",   label: "Contratos" },
   { href: "/client/facturacion", label: "Pagos" },
   { href: "/client/reclamos",    label: "Reclamos" },
+  { href: "/chat",               label: "Chat" },
 ];
 
 const CATEGORIES = [
