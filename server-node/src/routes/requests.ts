@@ -94,6 +94,56 @@ router.post("/requests", authRequired, requireRole("CLIENT", "ADMIN"), async (re
   return res.json({ ok: true, request });
 });
 
+/* ── GET /requests ─── list requests for current user (CLIENT sees own; PROVIDER sees assigned; ADMIN sees all) ── */
+router.get("/requests", authRequired, (req, res) => {
+  const auth = getAuth(req);
+  const userId: string = auth?.sub ?? "";
+  const role: string   = auth?.role ?? "";
+
+  const statusFilter = [req.query.status].flat().filter(Boolean) as string[];
+  let all = readJson<any[]>("requests", []);
+
+  if (role === "ADMIN") {
+    // admins see all
+  } else if (role === "PROVIDER") {
+    const provider = findProviderByUserId(userId);
+    const providerId = provider?.id;
+    all = all.filter((r: any) => r.providerId === providerId || r.acceptedProviderId === providerId);
+  } else {
+    // CLIENT sees own requests
+    all = all.filter((r: any) => r.clientId === userId);
+  }
+
+  if (statusFilter.length > 0) {
+    all = all.filter((r: any) => statusFilter.includes(r.status));
+  }
+
+  all.sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+  return res.json({ ok: true, requests: all, total: all.length });
+});
+
+/* ── GET /providers/:providerId/requests ─── shortcut for provider's own requests ── */
+router.get("/providers/:providerId/requests", authRequired, (req, res) => {
+  const { providerId } = req.params;
+  const auth = getAuth(req);
+  const role: string = auth?.role ?? "";
+
+  // Only ADMIN or the provider's own user can see this
+  if (role !== "ADMIN") {
+    const provider = findProviderByUserId(auth?.sub ?? "");
+    if (!provider || provider.id !== providerId) {
+      return res.status(403).json({ ok: false, error: "Sin acceso" });
+    }
+  }
+
+  const all = readJson<any[]>("requests", [])
+    .filter((r: any) => r.providerId === providerId || r.acceptedProviderId === providerId)
+    .sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+  return res.json({ ok: true, requests: all, total: all.length });
+});
+
 router.post("/quotes", authRequired, requireRole("PROVIDER", "ADMIN"), async (req, res) => {
   const parsed = QuoteCreateSchema.safeParse(req.body || {});
   if (!parsed.success) return res.status(400).json({ ok: false, error: "Datos inválidos" });
