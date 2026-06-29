@@ -133,9 +133,24 @@ app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
 
 const PORT = Number(process.env.PORT) || 4000;
 
+// Alarma de seguridad: en producción, faltar estas variables deja secretos por
+// defecto conocidos (JWT firmado con "dev-secret" = cualquiera puede forjar un
+// token admin). Hay que configurarlas en el panel de Railway.
+function warnInsecureEnv() {
+  if (process.env.NODE_ENV !== "production") return;
+  const missing: string[] = [];
+  if (!process.env.JWT_SECRET) missing.push("JWT_SECRET");
+  if (!process.env.ADMIN_TOKEN) missing.push("ADMIN_TOKEN");
+  if (!process.env.MP_ACCESS_TOKEN) missing.push("MP_ACCESS_TOKEN");
+  if (missing.length) {
+    logger.error(`[SEGURIDAD] Faltan variables críticas en producción: ${missing.join(", ")}. Configuralas en Railway antes de recibir usuarios reales.`);
+  }
+}
+
 app.listen(PORT, () => {
   seedAll();
   seedInitialUser();
   seedDemoData().catch((e) => logger.warn("seedDemoData error", { error: String(e) }));
+  warnInsecureEnv();
   logger.info(`API lista en http://localhost:${PORT}`);
 });
