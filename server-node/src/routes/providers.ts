@@ -1,4 +1,4 @@
-import { Router } from "express";
+import { Router, type Request, type Response, type NextFunction } from "express";
 import multer from "multer";
 import { fileURLToPath } from "url";
 import { authRequired } from "../security/middleware.js";
@@ -35,13 +35,30 @@ import { getRepos } from "../repositories/factory.js";
 
 const router = Router();
 
-router.get("/providers/by-user/:userId", (req, res) => {
+// Verifica que el solicitante sea dueño del prestador (o ADMIN). Evita que
+// un usuario modifique servicios/áreas/documentos de un prestador ajeno.
+function ensureOwnsProvider(req: Request, res: Response, next: NextFunction) {
+  const auth = (req as any).auth as { sub: string; role: string } | undefined;
+  if (!auth) return res.status(401).json({ ok: false, error: "Auth requerida" });
+  if (auth.role === "ADMIN") return next();
+  const providerId = req.params.id || req.params.providerId;
+  const provider = readJson<any[]>("providers", []).find((p) => p.id === providerId);
+  if (!provider) return res.status(404).json({ ok: false, error: "Prestador no encontrado" });
+  if (provider.userId !== auth.sub) return res.status(403).json({ ok: false, error: "Sin permiso sobre este prestador" });
+  return next();
+}
+
+router.get("/providers/by-user/:userId", authRequired, (req, res) => {
+  const auth = (req as any).auth as { sub: string; role: string };
+  if (auth.role !== "ADMIN" && auth.sub !== req.params.userId) {
+    return res.status(403).json({ ok: false, error: "Sin permiso" });
+  }
   const providers = readJson<any[]>("providers", []);
   const provider = providers.find((p) => p.userId === req.params.userId) || null;
   res.json({ ok: true, provider });
 });
 
-router.post("/providers/:id/services", async (req, res) => {
+router.post("/providers/:id/services", authRequired, ensureOwnsProvider, async (req, res) => {
   const { id } = req.params;
   const { catalogId, pricingType, price, notes, urgent } = req.body || {};
   if (!catalogId || !pricingType || typeof price !== "number") {
@@ -95,7 +112,7 @@ router.get("/providers/:id/services", async (req, res) => {
   return res.json({ ok: true, services: enriched });
 });
 
-router.put("/providers/:providerId/services/:serviceId", async (req, res) => {
+router.put("/providers/:providerId/services/:serviceId", authRequired, ensureOwnsProvider, async (req, res) => {
   const { providerId, serviceId } = req.params;
   const patch = {
     price: typeof req.body?.price === 'number' ? req.body.price : undefined,
@@ -117,7 +134,7 @@ router.put("/providers/:providerId/services/:serviceId", async (req, res) => {
   return res.json({ ok: true, service });
 });
 
-router.delete("/providers/:providerId/services/:serviceId", async (req, res) => {
+router.delete("/providers/:providerId/services/:serviceId", authRequired, ensureOwnsProvider, async (req, res) => {
   const { providerId, serviceId } = req.params;
   const repos = getRepos();
   if (repos.services) {
@@ -136,7 +153,7 @@ router.get("/providers/:providerId/profile", (req, res) => {
   res.json({ ok: true, profile });
 });
 
-router.put("/providers/:providerId/areas", (req, res) => {
+router.put("/providers/:providerId/areas", authRequired, ensureOwnsProvider, (req, res) => {
   const { areas } = req.body || {};
   if (!Array.isArray(areas)) return res.status(400).json({ ok: false, error: "Las areas deben ser un arreglo" });
   const profile = ensureProviderProfile(req.params.providerId);
@@ -146,7 +163,7 @@ router.put("/providers/:providerId/areas", (req, res) => {
   res.json({ ok: true, profile });
 });
 
-router.get("/providers/:providerId/documents", async (req, res) => {
+router.get("/providers/:providerId/documents", authRequired, ensureOwnsProvider, async (req, res) => {
   try {
     const { PrismaClient } = await import("@prisma/client");
     const client = new PrismaClient();
@@ -158,7 +175,7 @@ router.get("/providers/:providerId/documents", async (req, res) => {
   }
 });
 
-router.post("/providers/:providerId/documents", upload.single("file"), async (req, res) => {
+router.post("/providers/:providerId/documents", authRequired, ensureOwnsProvider, upload.single("file"), async (req, res) => {
   const type = String((req.body?.type || req.query?.type || "")).trim();
   if (!type) return res.status(400).json({ ok: false, error: "Tipo de documento requerido" });
   const file = req.file;
@@ -190,7 +207,7 @@ router.post("/providers/:providerId/documents", upload.single("file"), async (re
   }
 });
 
-router.get("/providers/:providerId/collaborators", (req, res) => {
+router.get("/providers/:providerId/collaborators", authRequired, ensureOwnsProvider, (req, res) => {
   const providerId = String(req.params?.providerId || "").trim();
   if (!providerId) return res.status(400).json({ ok: false, error: "providerId requerido" });
 
@@ -198,7 +215,7 @@ router.get("/providers/:providerId/collaborators", (req, res) => {
   res.json({ ok: true, collaborators });
 });
 
-router.post("/providers/:providerId/collaborators", (req, res) => {
+router.post("/providers/:providerId/collaborators", authRequired, ensureOwnsProvider, (req, res) => {
   const providerId = String(req.params?.providerId || "").trim();
   if (!providerId) return res.status(400).json({ ok: false, error: "providerId requerido" });
 
@@ -236,7 +253,7 @@ router.post("/providers/:providerId/collaborators", (req, res) => {
   res.status(201).json({ ok: true, collaborator });
 });
 
-router.put("/providers/:providerId/collaborators/:collaboratorId", (req, res) => {
+router.put("/providers/:providerId/collaborators/:collaboratorId", authRequired, ensureOwnsProvider, (req, res) => {
   const providerId = String(req.params?.providerId || "").trim();
   const collaboratorId = String(req.params?.collaboratorId || "").trim();
   if (!providerId || !collaboratorId) {
@@ -265,7 +282,7 @@ router.put("/providers/:providerId/collaborators/:collaboratorId", (req, res) =>
   res.json({ ok: true, collaborator: updated });
 });
 
-router.delete("/providers/:providerId/collaborators/:collaboratorId", (req, res) => {
+router.delete("/providers/:providerId/collaborators/:collaboratorId", authRequired, ensureOwnsProvider, (req, res) => {
   const providerId = String(req.params?.providerId || "").trim();
   const collaboratorId = String(req.params?.collaboratorId || "").trim();
   if (!providerId || !collaboratorId) {

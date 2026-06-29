@@ -98,7 +98,9 @@ export function AuthProvider({ children }) {
     },
     async refreshProvider(userId) {
       if (!userId) return null;
-      const data = await baseRequest(`/api/providers/by-user/${userId}`, {}, () => logoutRef.current?.());
+      const headers = {};
+      if (state.token) headers["Authorization"] = `Bearer ${state.token}`;
+      const data = await baseRequest(`/api/providers/by-user/${userId}`, { headers }, () => logoutRef.current?.());
       setState((prev) => ({ ...prev, provider: data.provider }));
       return data.provider;
     },

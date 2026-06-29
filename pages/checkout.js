@@ -60,7 +60,9 @@ export default function CheckoutPage() {
         body: JSON.stringify({ userId: user?.id, providerId: totals.providerId, totals, urgent: totals.urgent })
       });
       setMsg('Checkout creado. Redirigiendo...');
-      if (res.redirectUrl) window.location.href = res.redirectUrl;
+      const dest = res.initPoint || res.redirectUrl;
+      if (dest) window.location.href = dest;
+      else setError('No se pudo iniciar el pago. Intentá de nuevo.');
     } catch (e) {
       setError(e.message);
     } finally {

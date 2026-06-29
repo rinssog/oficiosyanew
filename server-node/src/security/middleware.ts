@@ -1,7 +1,7 @@
 import type { Request, Response, NextFunction } from "express";
 import { verifyToken } from "./jwt.js";
 
-const ADMIN_TOKEN = process.env.ADMIN_TOKEN || "changeme";
+const ADMIN_TOKEN = process.env.ADMIN_TOKEN || "";
 
 /**
  * Dual admin auth:
@@ -11,7 +11,7 @@ const ADMIN_TOKEN = process.env.ADMIN_TOKEN || "changeme";
 export function adminTokenRequired(req: Request, res: Response, next: NextFunction) {
   // Method 1: static admin token header
   const xToken = req.headers["x-admin-token"];
-  if (xToken && xToken === ADMIN_TOKEN) return next();
+  if (ADMIN_TOKEN && xToken && xToken === ADMIN_TOKEN) return next();
 
   // Method 2: JWT Bearer token from logged-in ADMIN user
   const auth = req.headers.authorization || "";

@@ -98,11 +98,29 @@ router.post("/payments/checkout", authRequired, async (req, res) => {
       try { const prisma = new PrismaClient(); await prisma.paymentAttempt.update({ where: { id: attempt.id }, data: { mpPreferenceId: pref.id }});} catch {}
       return res.status(201).json({ ok: true, attempt, preferenceId: pref.id, initPoint: pref.init_point });
     } catch (e: any) {
-      return res.status(201).json({ ok: true, attempt, redirectUrl: `/success?payment=${attempt.id}` });
+      return res.status(201).json({ ok: true, attempt, redirectUrl: `/checkout/success?payment=${attempt.id}` });
     }
   }
   // Fallback: redirect simulado
   return res.status(201).json({ ok: true, attempt, redirectUrl: `/success?payment=${attempt.id}` });
+});
+
+// Consultar estado de un intento de pago — usado por las pantallas de retorno
+router.get("/payments/:id", authRequired, async (req, res) => {
+  const auth = (req as any).auth as { sub: string; role: string };
+  try {
+    const prisma = new PrismaClient();
+    const attempt = await prisma.paymentAttempt.findUnique({ where: { id: req.params.id } });
+    if (attempt) {
+      if (auth.role !== "ADMIN" && attempt.userId !== auth.sub) return res.status(403).json({ ok: false, error: "Sin acceso" });
+      return res.json({ ok: true, attempt });
+    }
+  } catch { /* cae a JSON */ }
+  const all = readJson<any[]>("payments", []);
+  const attempt = all.find((p) => p.id === req.params.id) || null;
+  if (!attempt) return res.status(404).json({ ok: false, error: "Pago no encontrado" });
+  if (auth.role !== "ADMIN" && attempt.userId !== auth.sub) return res.status(403).json({ ok: false, error: "Sin acceso" });
+  return res.json({ ok: true, attempt });
 });
 
 // Webhook placeholder (MP): recibirá notificaciones de pago real
