@@ -30,7 +30,7 @@ const nextConfig = {
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               "font-src 'self' https://fonts.gstatic.com data:",
               "img-src 'self' data: blob: https:",
-              "connect-src 'self' https://backend-production-c686.up.railway.app https://api.mercadopago.com https://fonts.googleapis.com https://fonts.gstatic.com",
+              "connect-src 'self' oficiosya-backend-xpbc.onrender.com https://api.mercadopago.com https://fonts.googleapis.com https://fonts.gstatic.com",
               "frame-src 'self' https://www.mercadopago.com https://mercadopago.com",
               "frame-ancestors 'none'",
               "base-uri 'self'",
