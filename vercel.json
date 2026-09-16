@@ -4,6 +4,6 @@
   "framework": "nextjs",
   "installCommand": "npm install",
   "env": {
-    "NEXT_PUBLIC_API_BASE": "https://backend-production-c686.up.railway.app"
+    "NEXT_PUBLIC_API_BASE": "oficiosya-backend-xpbc.onrender.com"
   }
 }
