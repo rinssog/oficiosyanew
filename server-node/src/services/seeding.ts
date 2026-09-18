@@ -677,8 +677,83 @@ export const seedDemoData = async () => {
     { id: "svc_carp_002", providerId: "pro_carp_001", catalogId: "CAR-002", category: "Carpintería", subCategory: "Puertas",  modalities: ["PRESENCIAL"], allowsUrgent: false, price: 2200000,  notes: "Reparación de puerta trabada, ajuste de bisagras y cierre. Incluye materiales.", estimatedDuration: 120, createdAt: now },
   ];
 
+  // ── Catálogo ampliado: prestadores realistas por rubro (marketplace vivo) ──
+  const FIRST = ["Martín","Carlos","Roberto","Diego","Pablo","Lucas","Sofía","Julieta","Gabriel","Andrés","Fernando","Nicolás","Matías","Javier","Sebastián","Hernán","Marcelo","Gustavo","Leonardo","Cristian","Damián","Ezequiel","Facundo","Ariel","Rodrigo","Emiliano","Tomás","Franco","Valeria","Carla"];
+  const LAST = ["Rodríguez","Fernández","González","López","Martínez","García","Pérez","Sánchez","Romero","Sosa","Torres","Álvarez","Ruiz","Díaz","Acosta","Benítez","Molina","Silva","Rojas","Medina","Suárez","Giménez","Ferreyra","Cabrera","Ríos","Ledesma","Ojeda","Vega"];
+  const ZONES = ["Palermo","Recoleta","Belgrano","Caballito","Flores","Villa Urquiza","Almagro","Villa Crespo","Núñez","Saavedra","Villa Devoto","Colegiales","Chacarita","Barracas","San Telmo","Boedo","Parque Patricios","San Isidro","Vicente López","Tigre","San Martín","Morón","Quilmes","Avellaneda","Lanús","Lomas de Zamora"];
+  const PLANS = ["plan_base","plan_pro","plan_empresas"];
+  const REVIEW_TEXTS = ["Excelente trabajo, muy prolijo y puntual.","Cumplió con todo lo acordado. Recomendado.","Rápido y profesional, volvería a contratar.","Buen precio y buena atención.","Solucionó el problema en el día. Impecable.","Muy amable y ordenado. Dejó todo limpio.","Llegó en horario y trabajó muy bien.","Trabajo de calidad, se nota la experiencia.","Respondió rápido y resolvió la urgencia.","Todo perfecto, muy recomendable."];
+
+  const RUBRO_POOL: { cat: string; subs: string[]; urgent: boolean; matricula?: boolean; priceMin: number; priceMax: number }[] = [
+    { cat:"Plomería", subs:["Destapaciones","Grifería","Instalaciones"], urgent:true, priceMin:12000, priceMax:45000 },
+    { cat:"Electricidad", subs:["Tableros","Iluminación","Urgencias"], urgent:true, matricula:true, priceMin:15000, priceMax:60000 },
+    { cat:"Gasista", subs:["Calefones","Fugas de gas","Termotanques"], urgent:true, matricula:true, priceMin:20000, priceMax:70000 },
+    { cat:"Cerrajería", subs:["Apertura","Bombines","Cajas fuertes"], urgent:true, priceMin:10000, priceMax:40000 },
+    { cat:"Pintura", subs:["Interior","Exterior y frentes","Decorativa"], urgent:false, priceMin:12000, priceMax:80000 },
+    { cat:"Carpintería", subs:["Muebles a medida","Puertas y ventanas","Pisos de madera"], urgent:false, priceMin:15000, priceMax:90000 },
+    { cat:"Albañilería", subs:["Revoques","Cerámicos","Impermeabilización"], urgent:false, priceMin:18000, priceMax:120000 },
+    { cat:"Herrería", subs:["Rejas y portones","Soldadura","Portones automáticos"], urgent:false, priceMin:20000, priceMax:150000 },
+    { cat:"Techista", subs:["Goteras","Chapas","Cielorrasos"], urgent:true, priceMin:20000, priceMax:100000 },
+    { cat:"Climatización", subs:["Instalación split","Carga de gas","Service"], urgent:true, matricula:true, priceMin:18000, priceMax:80000 },
+    { cat:"Jardinería", subs:["Corte de césped","Poda","Diseño de jardín"], urgent:false, priceMin:8000, priceMax:40000 },
+    { cat:"Fumigación", subs:["Control de plagas","Desinfección","Roedores"], urgent:true, matricula:true, priceMin:10000, priceMax:35000 },
+    { cat:"Limpieza del Hogar", subs:["Limpieza profunda","Fin de obra","Tapizados"], urgent:false, priceMin:9000, priceMax:30000 },
+    { cat:"Mudanzas", subs:["Mudanza chica","Flete","Embalaje"], urgent:false, priceMin:25000, priceMax:120000 },
+    { cat:"Técnico en Electrodomésticos", subs:["Lavarropas","Heladeras","Microondas"], urgent:true, priceMin:10000, priceMax:45000 },
+    { cat:"Técnico Informático", subs:["Reparación PC","Redes","Instalación"], urgent:false, priceMin:8000, priceMax:35000 },
+    { cat:"Vidriería", subs:["Vidrios rotos","Espejos","Mamparas"], urgent:true, priceMin:12000, priceMax:60000 },
+    { cat:"Alarmas y CCTV", subs:["Cámaras","Alarmas","Cerco eléctrico"], urgent:false, priceMin:20000, priceMax:150000 },
+  ];
+
+  const bioFor = (cat: string, matricula?: boolean) =>
+    `${cat} profesional con años de experiencia en CABA y GBA. ${matricula ? "Matriculado habilitado. " : ""}Trabajo garantizado, presupuesto sin cargo y atención personalizada.`;
+
+  let seq = 0;
+  const genRatings: any[] = [];
+  RUBRO_POOL.forEach((rp, ri) => {
+    for (let k = 0; k < 2; k++) { // 2 prestadores por rubro
+      seq++;
+      const fn = FIRST[(ri * 3 + k) % FIRST.length];
+      const ln = LAST[(ri * 5 + k * 2) % LAST.length];
+      const uid = `usr_gen_${seq}`;
+      const pid = `pro_gen_${seq}`;
+      const rating = Number((4.3 + ((seq * 7) % 7) / 10).toFixed(1)); // 4.3–4.9
+      const reviewCount = 6 + ((seq * 13) % 130);
+      const plan = PLANS[seq % 3];
+      const gold = plan === "plan_empresas";
+      const verified = (seq % 5) !== 0; // ~80% verificados
+      const areaStart = (seq * 3) % ZONES.length;
+      const areas = [0, 1, 2].map((i) => ZONES[(areaStart + i) % ZONES.length]);
+
+      usersArr.push({ id: uid, email: `prestador${seq}@demo.com`, name: `${fn} ${ln}`, role: "PROVIDER", passwordHash: demoHash, createdAt: now, phone: `+54 9 11 ${4000 + seq}-${1000 + seq}` });
+      providersArr.push({ id: pid, userId: uid, companyName: `${ln} ${rp.cat}`, verified, bio: bioFor(rp.cat, rp.matricula), categories: [rp.cat], rating, reviewCount, plan, createdAt: now, updatedAt: now, goldLevel: gold });
+      profilesArr.push({ providerId: pid, areas, verificationStatus: verified ? "APPROVED" : "PENDING", bio: bioFor(rp.cat, rp.matricula), documents: [], createdAt: now });
+
+      rp.subs.forEach((sub, si) => {
+        const price = (rp.priceMin + ((seq * 137 + si * 53) % (rp.priceMax - rp.priceMin))) * 100; // centavos
+        newServices.push({ id: `svc_gen_${seq}_${si}`, providerId: pid, catalogId: `GEN-${seq}-${si}`, category: rp.cat, subCategory: sub, modalities: ["PRESENCIAL"], allowsUrgent: rp.urgent && si === 0, price, notes: "Presupuesto sin cargo. Garantía incluida.", estimatedDuration: 60 + si * 30, createdAt: now });
+      });
+
+      const nRev = 3 + (seq % 3);
+      for (let r = 0; r < nRev; r++) {
+        genRatings.push({ id: `rat_gen_${seq}_${r}`, providerId: pid, clientId: `usr_client_${(r % 2) + 2}`, score: (seq + r) % 5 === 0 ? 4 : 5, comment: REVIEW_TEXTS[(seq + r) % REVIEW_TEXTS.length], createdAt: now - (r + 1) * 86400000 });
+      }
+    }
+  });
+
+  // Reseñas también para los 6 prestadores base
+  ["pro_plo_001", "pro_elec_001", "pro_gas_001", "pro_cerr_001", "pro_pin_001", "pro_carp_001"].forEach((pid, idx) => {
+    for (let r = 0; r < 4; r++) {
+      genRatings.push({ id: `rat_base_${idx}_${r}`, providerId: pid, clientId: `usr_client_${(r % 2) + 2}`, score: r === 0 ? 4 : 5, comment: REVIEW_TEXTS[(idx + r) % REVIEW_TEXTS.length], createdAt: now - (r + 1) * 172800000 });
+    }
+  });
+
+  writeJson("users", usersArr);
+  writeJson("providers", providersArr);
+  writeJson("provider_profiles", profilesArr);
+  writeJson("provider_ratings", genRatings);
   writeJson("provider_services", newServices);
-  console.log("[SEED] Demo data seeded: 6 providers, 15 services ✓");
+  console.log(`[SEED] Marketplace seeded: ${providersArr.length} prestadores, ${newServices.length} servicios, ${genRatings.length} reseñas ✓`);
 };
 
 export const seedAll = () => {
