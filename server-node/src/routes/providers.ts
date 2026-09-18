@@ -704,6 +704,22 @@ router.get("/providers/search", (req, res) => {
   const modality = typeof req.query.modality === "string" ? req.query.modality.toUpperCase() : undefined;
   const wantsUrgent = String(req.query.urgent || "").toLowerCase() === "true";
   const zone = typeof req.query.zone === "string" ? req.query.zone : undefined;
+  const q = typeof req.query.q === "string" ? req.query.q.trim() : "";
+
+  // Búsqueda por texto con relevancia: normaliza acentos y compara por raíz
+  // (así "electricista" matchea "Electricidad", "gasista" matchea "Gas", etc.)
+  const norm = (s: any) =>
+    (s ?? "").toString().toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+  const qWords = norm(q).split(/\s+/).filter((w) => w.length >= 3);
+  const textMatches = (haystack: string) => {
+    if (qWords.length === 0) return true;
+    const hayTokens = haystack.split(/\s+/).filter(Boolean);
+    return qWords.some((w) => {
+      if (haystack.includes(w)) return true;
+      const stem = w.slice(0, 4);
+      return hayTokens.some((t) => t.startsWith(stem) || w.startsWith(t.slice(0, 4)));
+    });
+  };
 
   const services = readJson<any[]>("provider_services", []);
   const catalog = readJson<CatalogItem[]>("catalog", []);
@@ -716,6 +732,19 @@ router.get("/providers/search", (req, res) => {
     if (subCategory && service.subCategory !== subCategory) return false;
     if (wantsUrgent && service.allowsUrgent !== true) return false;
     if (modality && !(Array.isArray(service.modalities) && service.modalities.includes(modality))) return false;
+    if (qWords.length > 0) {
+      const cat = catalog.find((c) => c.id === service.catalogId) as any;
+      const prov = providers.find((p) => p.id === service.providerId) as any;
+      const haystack = norm([
+        cat?.rubro, cat?.subrubro, cat?.nombre,
+        Array.isArray(cat?.etiquetas) ? cat.etiquetas.join(" ") : "",
+        Array.isArray(cat?.sinonimos) ? cat.sinonimos.join(" ") : "",
+        service.category, service.subCategory, service.nombre,
+        Array.isArray(prov?.categories) ? prov.categories.join(" ") : "",
+        prov?.companyName,
+      ].join(" "));
+      if (!textMatches(haystack)) return false;
+    }
     return true;
   });
 
