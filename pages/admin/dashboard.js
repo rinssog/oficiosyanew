@@ -1,234 +1,175 @@
 /**
- * pages/admin/dashboard.js — Panel de administración central
+ * pages/admin/dashboard.js — Backoffice OficiosYa
+ * Dashboard por rol de staff, con KPIs, registros fechados y accesos rápidos.
  */
 import { useEffect, useMemo, useState } from "react";
-import Head from "next/head";
 import Link from "next/link";
-import { useRouter } from "next/router";
-import NavBar from "../../components/NavBar";
-import Footer from "../../components/Footer";
-import DashboardShell from "../../components/DashboardShell";
-import KpiCard from "../../components/KpiCard";
 import { useAuth } from "../../contexts/AuthContext";
+import AdminLayout from "../../components/AdminLayout";
+import { navForRole, normalizeStaffRole, STAFF_ROLE_LABELS } from "../../lib/adminRbac";
 
-const F = "#0D3B1F", V = "#16A34A";
+const C = {
+  verdeOscuro: "#0D3B1F", verde: "#16A34A", dorado: "#C9A227",
+  panel: "#FFFFFF", borde: "#D4E0D6", textoSec: "#6B7C6E", ink: "#12261A",
+  fondoSuave: "#F7F9F5", rojo: "#DC2626", ambar: "#D97706", azul: "#1D4ED8",
+};
 
-const ADMIN_NAV = [
-  { href: "/admin/dashboard",      label: "📊 Dashboard" },
-  { href: "/admin/verificaciones", label: "🛡️ Verificaciones" },
-  { href: "/admin/users",          label: "👥 Usuarios" },
-  { href: "/admin/solicitudes",    label: "📋 Solicitudes" },
-  { href: "/admin/escrow",         label: "💳 Escrow" },
-  { href: "/admin/ratings",        label: "⭐ Reseñas" },
-  { href: "/admin/reclamos",       label: "📝 Reclamos" },
-  { href: "/admin/chat-alerts",    label: "🚨 Chat/Alertas" },
-  { href: "/admin/documentacion",  label: "📄 Docs KYC" },
-  { href: "/admin/reportes",       label: "📈 Reportes" },
-];
+function fmtDate(v) {
+  if (!v) return "—";
+  const d = new Date(typeof v === "number" ? v : Date.parse(v));
+  if (isNaN(d)) return "—";
+  return d.toLocaleString("es-AR", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" });
+}
+
+const CLAIM_STATUS = {
+  PENDING:   { label: "Pendiente", color: "#92400E", bg: "#FFFBEB" },
+  OPEN:      { label: "Abierto",   color: "#1D4ED8", bg: "#EFF6FF" },
+  IN_REVIEW: { label: "En revisión", color: "#7C3AED", bg: "#F5F3FF" },
+  RESOLVED:  { label: "Resuelto",  color: "#166534", bg: "#F0FDF4" },
+  REJECTED:  { label: "Rechazado", color: "#DC2626", bg: "#FEF2F2" },
+  CLOSED:    { label: "Cerrado",   color: "#6B7280", bg: "#F9FAFB" },
+};
 
 export default function AdminDashboard() {
   const { user, apiRequest, isReady } = useAuth();
-  const router = useRouter();
-  const [metrics,     setMetrics]     = useState(null);
+  const [metrics, setMetrics] = useState(null);
   const [pendingDocs, setPendingDocs] = useState([]);
-  const [claims,      setClaims]      = useState({ pending: 0, open: 0 });
-  const [loading,     setLoading]     = useState(true);
-  const [error,       setError]       = useState(null);
+  const [recentClaims, setRecentClaims] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  const staffRole = normalizeStaffRole(user?.staffRole);
 
   useEffect(() => {
-    if (!isReady) return;
-    if (!user) { router.replace("/auth/login"); return; }
-    if (user.role !== "ADMIN") { router.replace("/"); return; }
-    loadAll();
-  }, [isReady, user]);
+    if (!isReady || !user || user.role !== "ADMIN") return;
+    (async () => {
+      setLoading(true); setError(null);
+      try {
+        const [m, d, c] = await Promise.allSettled([
+          apiRequest("/api/admin/metrics"),
+          apiRequest("/api/admin/documents/pending"),
+          apiRequest("/api/admin/claims"),
+        ]);
+        if (m.status === "fulfilled" && m.value?.ok) setMetrics(m.value.metrics || null);
+        if (d.status === "fulfilled" && d.value?.ok) setPendingDocs(d.value.pending || []);
+        if (c.status === "fulfilled" && c.value?.ok) setRecentClaims(c.value.claims || []);
+      } catch (e) { setError(e.message); }
+      finally { setLoading(false); }
+    })();
+  }, [isReady, user, apiRequest]);
 
-  async function loadAll() {
-    setLoading(true);
-    setError(null);
-    try {
-      const [metricsRes, docsRes, claimsRes] = await Promise.allSettled([
-        apiRequest("/api/admin/metrics"),
-        apiRequest("/api/admin/documents/pending"),
-        apiRequest("/api/admin/claims?status=PENDING"),
-      ]);
+  const openClaims = useMemo(
+    () => recentClaims.filter((c) => ["PENDING", "OPEN", "IN_REVIEW"].includes(c.status)),
+    [recentClaims]
+  );
 
-      if (metricsRes.status === "fulfilled" && metricsRes.value?.ok) {
-        setMetrics(metricsRes.value.metrics || null);
-      }
-      if (docsRes.status === "fulfilled" && docsRes.value?.ok) {
-        setPendingDocs((docsRes.value.pending || []).slice(0, 5));
-      }
-      if (claimsRes.status === "fulfilled" && claimsRes.value?.ok) {
-        const cl = claimsRes.value.claims || [];
-        setClaims({
-          pending: cl.filter(c => c.status === "PENDING").length,
-          open:    cl.filter(c => c.status === "OPEN").length,
-        });
-      }
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  }
+  const badges = {
+    verificaciones: pendingDocs.length || undefined,
+    documentacion: pendingDocs.length || undefined,
+    reclamos: openClaims.length || undefined,
+  };
 
-  const navItems = useMemo(() => [
-    ...ADMIN_NAV.slice(0, 2),
-    { ...ADMIN_NAV[2], badge: pendingDocs.length ? String(pendingDocs.length) : undefined },
-    ...ADMIN_NAV.slice(3, 4),
-    { ...ADMIN_NAV[4], badge: (claims.pending + claims.open) > 0 ? String(claims.pending + claims.open) : undefined },
-    ...ADMIN_NAV.slice(5),
-  ], [pendingDocs.length, claims]);
+  const kpis = [
+    { label: "Prestadores verificados", value: metrics?.providersVerified ?? "—", helper: `${metrics?.providersTotal ?? 0} en total`, color: C.verde },
+    { label: "Urgencias activas", value: metrics?.urgentActive ?? 0, helper: "SLA 2 h", color: C.rojo },
+    { label: "Presupuestos aceptados", value: metrics?.quotesAccepted ?? 0, helper: "histórico", color: C.azul },
+    { label: "Reclamos abiertos", value: openClaims.length, helper: "requieren atención", color: C.ambar },
+    { label: "Docs KYC pendientes", value: pendingDocs.length, helper: "por revisar", color: C.dorado },
+  ];
 
-  const kpis = useMemo(() => {
-    if (!metrics) return [];
-    return [
-      { title: "Prestadores verificados", value: metrics.providersVerified ?? "—", helper: `${metrics.providersTotal ?? 0} activos`, icon: "🛠️", color: "var(--primary)" },
-      { title: "Urgencias activas",       value: metrics.urgentActive ?? 0,         helper: "SLA 2h",                                icon: "🚨", color: "var(--danger)" },
-      { title: "Presupuestos aceptados",  value: metrics.quotesAccepted ?? 0,        helper: "Total histórico",                        icon: "📋", color: "var(--info)" },
-      { title: "Reclamos pendientes",     value: claims.pending + claims.open,       helper: "Requieren atención",                    icon: "⚠️", color: "var(--warning)" },
-      { title: "Docs pendientes",         value: metrics.documentsPending ?? 0,      helper: "KYC por revisar",                        icon: "🪪", color: "var(--gold)" },
-      ...(metrics.averageRating != null ? [{ title: "Rating promedio", value: Number(metrics.averageRating).toFixed(1), helper: "Escala 1-5", icon: "⭐", color: "var(--warning)" }] : []),
-    ];
-  }, [metrics, claims]);
-
-  const alerts = useMemo(() => {
-    const list = [];
-    if (!metrics) return list;
-    if (metrics.urgentActive > 3) list.push({ id: "urgent", msg: `🚨 ${metrics.urgentActive} urgencias activas — revisar SLA`, sev: "critico" });
-    if (metrics.documentsPending > 0) list.push({ id: "docs", msg: `🪪 ${metrics.documentsPending} documentos KYC pendientes de revisión`, sev: "warning" });
-    if ((claims.pending + claims.open) > 5) list.push({ id: "claims", msg: `⚠️ ${claims.pending + claims.open} reclamos sin resolver — atender hoy`, sev: "critico" });
-    return list;
-  }, [metrics, claims]);
-
-  if (!isReady || !user) return null;
+  const quickAccess = useMemo(
+    () => navForRole(staffRole).flatMap((g) => g.items).filter((it) => it.section !== "dashboard"),
+    [staffRole]
+  );
 
   return (
-    <>
-      <Head><title>Panel Admin · OficiosYa</title></Head>
-      <NavBar />
-      <DashboardShell
-        title="Panel de Administración"
-        subtitle="Control integral de la plataforma — KPIs, documentación y gestión."
-        navItems={navItems}
-        active="/admin/dashboard"
-        rightSlot={
-          <button className="btn btn-ghost btn-sm" onClick={loadAll}>🔄</button>
-        }
-      >
-        {error && (
-          <div className="alert alert-danger">{error}</div>
-        )}
+    <AdminLayout active="dashboard" title="Dashboard" subtitle={`Vista de ${STAFF_ROLE_LABELS[staffRole] || "staff"} · ${new Date().toLocaleDateString("es-AR", { weekday: "long", day: "numeric", month: "long" })}`} badges={badges}>
+      {error && (
+        <div style={{ background: "#FEF2F2", border: "1px solid #FCA5A5", color: C.rojo, padding: "10px 14px", borderRadius: 10, marginBottom: 16 }}>
+          No se pudieron cargar algunos datos: {error}
+        </div>
+      )}
 
-        {/* KPIs */}
-        <section style={{ display: "grid", gap: 14, gridTemplateColumns: "repeat(auto-fit,minmax(200px,1fr))" }}>
-          {loading
-            ? [1,2,3,4,5].map(i => <div key={i} className="skeleton" style={{ height: 100, borderRadius: 16 }} />)
-            : kpis.map(kpi => <KpiCard key={kpi.title} {...kpi} />)
-          }
-        </section>
-
-        {/* Alertas */}
-        {!loading && alerts.length > 0 && (
-          <section>
-            <h3 style={{ color: F, fontSize: 15, fontWeight: 800, marginBottom: 10 }}>⚡ Alertas activas</h3>
-            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-              {alerts.map(a => (
-                <div key={a.id} style={{
-                  padding: "12px 16px", borderRadius: 12, fontWeight: 600, fontSize: 13,
-                  background: a.sev === "critico" ? "#FEF2F2" : "#FFFBEB",
-                  color:      a.sev === "critico" ? "#DC2626"  : "#92400E",
-                  border:     `1px solid ${a.sev === "critico" ? "#FECACA" : "#FDE68A"}`,
-                }}>
-                  {a.msg}
-                </div>
-              ))}
-            </div>
-          </section>
-        )}
-
-        {/* Accesos rápidos */}
-        <section>
-          <h3 style={{ color: F, fontSize: 15, fontWeight: 800, marginBottom: 14 }}>🔗 Accesos rápidos</h3>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(160px,1fr))", gap: 10 }}>
-            {[
-              { label: "📝 Reclamos", href: "/admin/reclamos", accent: "#DC2626" },
-              { label: "🪪 Verificar docs", href: "/admin/verificaciones", accent: "#D97706" },
-              { label: "👤 Usuarios", href: "/admin/users", accent: V },
-              { label: "💬 Chat/Mod", href: "/admin/chat-alerts", accent: "#7C3AED" },
-              { label: "💰 Escrow", href: "/admin/escrow", accent: "#1D4ED8" },
-              { label: "⭐ Ratings", href: "/admin/ratings", accent: "#92400E" },
-            ].map(a => (
-              <Link key={a.href} href={a.href} style={{ textDecoration: "none" }}>
-                <div style={{
-                  background: "#fff", border: "1.5px solid var(--border)", borderRadius: 14,
-                  padding: "16px 14px", textAlign: "center", cursor: "pointer", transition: "all .15s",
-                  borderLeft: `4px solid ${a.accent}`,
-                }}
-                  onMouseEnter={e => { e.currentTarget.style.background = "#F7F9F5"; e.currentTarget.style.boxShadow = "var(--shadow)"; }}
-                  onMouseLeave={e => { e.currentTarget.style.background = "#fff"; e.currentTarget.style.boxShadow = "none"; }}
-                >
-                  <div style={{ fontWeight: 700, color: F, fontSize: 13 }}>{a.label}</div>
-                </div>
-              </Link>
-            ))}
+      {/* KPIs */}
+      <section style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(170px,1fr))", gap: 12, marginBottom: 22 }}>
+        {kpis.map((k) => (
+          <div key={k.label} style={{ background: C.panel, border: `1px solid ${C.borde}`, borderRadius: 14, padding: "16px 16px", boxShadow: "0 1px 2px rgba(13,59,31,.05)", position: "relative", overflow: "hidden" }}>
+            <div style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: 4, background: k.color }} />
+            <div style={{ fontSize: "1.9rem", fontWeight: 800, color: C.ink, fontVariantNumeric: "tabular-nums", lineHeight: 1 }}>{loading ? "…" : k.value}</div>
+            <div style={{ fontSize: ".82rem", fontWeight: 700, color: C.ink, marginTop: 8 }}>{k.label}</div>
+            <div style={{ fontSize: ".72rem", color: C.textoSec, marginTop: 2 }}>{k.helper}</div>
           </div>
-        </section>
+        ))}
+      </section>
 
-        {/* Documentación pendiente */}
-        {!loading && (
-          <section>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
-              <h3 style={{ color: F, fontSize: 15, fontWeight: 800, margin: 0 }}>🪪 KYC — Documentación pendiente</h3>
-              <Link href="/admin/verificaciones">
-                <button className="btn btn-ghost btn-sm">Ver todos →</button>
-              </Link>
-            </div>
-            <div className="card-flat">
-              {pendingDocs.length === 0 ? (
-                <p style={{ color: "var(--text-muted)", fontSize: 13, textAlign: "center", padding: "20px 0" }}>✅ Sin documentos pendientes de revisión</p>
-              ) : (
-                <div className="table-responsive">
-                  <table>
-                    <thead>
-                      <tr>
-                        <th>Prestador</th>
-                        <th>Documento</th>
-                        <th>Estado</th>
-                        <th>Última carga</th>
-                        <th></th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {pendingDocs.map(item => (
-                        <tr key={`${item.providerId}-${item.type || "doc"}`}>
-                          <td style={{ fontWeight: 600, color: F }}>{item.providerId?.slice(0, 10) || "—"}</td>
-                          <td>{item.label || item.type || "—"}</td>
-                          <td>
-                            <span style={{ background: "#FFFBEB", color: "#92400E", borderRadius: 20, padding: "2px 8px", fontSize: 11, fontWeight: 700 }}>
-                              {item.status}
-                            </span>
-                          </td>
-                          <td style={{ color: "var(--text-muted)", fontSize: 12 }}>
-                            {item.uploadedAt ? new Date(item.uploadedAt).toLocaleDateString("es-AR") : "—"}
-                          </td>
-                          <td>
-                            <Link href={`/admin/verificaciones?providerId=${item.providerId}`}>
-                              <button className="btn btn-ghost btn-sm">Revisar</button>
-                            </Link>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </div>
-          </section>
-        )}
+      {/* Dos columnas: KYC pendiente + Reclamos recientes */}
+      <section style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px,1fr))", gap: 16, marginBottom: 22 }}>
+        {/* KYC pendiente */}
+        <div style={{ background: C.panel, border: `1px solid ${C.borde}`, borderRadius: 14, overflow: "hidden" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "13px 16px", borderBottom: `1px solid ${C.borde}` }}>
+            <strong style={{ color: C.verdeOscuro }}>Documentos KYC pendientes</strong>
+            <Link href="/admin/verificaciones" style={{ fontSize: ".8rem", color: C.verde, fontWeight: 700, textDecoration: "none" }}>Ver todos →</Link>
+          </div>
+          {loading ? <Empty text="Cargando…" /> : pendingDocs.length === 0 ? <Empty text="✅ Sin documentos pendientes" /> : (
+            <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
+              {pendingDocs.slice(0, 6).map((doc, i) => (
+                <li key={doc.id || i} style={{ display: "flex", justifyContent: "space-between", gap: 10, padding: "11px 16px", borderTop: i ? `1px solid ${C.fondoSuave}` : "none" }}>
+                  <div style={{ minWidth: 0 }}>
+                    <div style={{ fontWeight: 600, fontSize: ".88rem", color: C.ink, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{doc.type || doc.docType || "Documento"} — {doc.providerName || doc.userName || doc.providerId || "—"}</div>
+                    <div style={{ fontSize: ".72rem", color: C.textoSec }}>Enviado: {fmtDate(doc.createdAt || doc.submittedAt || doc.uploadedAt)}</div>
+                  </div>
+                  <span style={{ alignSelf: "center", background: "#FFFBEB", color: "#92400E", borderRadius: 999, padding: "2px 9px", fontSize: ".7rem", fontWeight: 700, whiteSpace: "nowrap" }}>Pendiente</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
 
-      </DashboardShell>
-      <Footer />
-    </>
+        {/* Reclamos recientes */}
+        <div style={{ background: C.panel, border: `1px solid ${C.borde}`, borderRadius: 14, overflow: "hidden" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "13px 16px", borderBottom: `1px solid ${C.borde}` }}>
+            <strong style={{ color: C.verdeOscuro }}>Reclamos recientes</strong>
+            <Link href="/admin/reclamos" style={{ fontSize: ".8rem", color: C.verde, fontWeight: 700, textDecoration: "none" }}>Ver todos →</Link>
+          </div>
+          {loading ? <Empty text="Cargando…" /> : recentClaims.length === 0 ? <Empty text="✅ Sin reclamos" /> : (
+            <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
+              {recentClaims.slice(0, 6).map((c, i) => {
+                const st = CLAIM_STATUS[c.status] || CLAIM_STATUS.PENDING;
+                return (
+                  <li key={c.id || i} style={{ display: "flex", justifyContent: "space-between", gap: 10, padding: "11px 16px", borderTop: i ? `1px solid ${C.fondoSuave}` : "none" }}>
+                    <div style={{ minWidth: 0 }}>
+                      <div style={{ fontWeight: 600, fontSize: ".88rem", color: C.ink, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{(c.category || "Reclamo").replace(/_/g, " ")}</div>
+                      <div style={{ fontSize: ".72rem", color: C.textoSec }}>{fmtDate(c.createdAt)}</div>
+                    </div>
+                    <span style={{ alignSelf: "center", background: st.bg, color: st.color, borderRadius: 999, padding: "2px 9px", fontSize: ".7rem", fontWeight: 700, whiteSpace: "nowrap" }}>{st.label}</span>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </div>
+      </section>
+
+      {/* Accesos rápidos (según rol) */}
+      <section>
+        <div style={{ fontSize: ".72rem", letterSpacing: ".12em", textTransform: "uppercase", color: C.textoSec, fontWeight: 700, marginBottom: 10 }}>Accesos rápidos</div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px,1fr))", gap: 10 }}>
+          {quickAccess.map((it) => (
+            <Link key={it.href} href={it.href} style={{
+              display: "flex", alignItems: "center", gap: 10, padding: "14px 15px", background: C.panel,
+              border: `1px solid ${C.borde}`, borderRadius: 12, textDecoration: "none", color: C.verdeOscuro, fontWeight: 600, fontSize: ".9rem",
+            }}>
+              <span style={{ width: 8, height: 8, borderRadius: "50%", background: C.verde }} />
+              {it.label}
+              {badges[it.section] ? <span style={{ marginLeft: "auto", background: C.dorado, color: C.verdeOscuro, borderRadius: 999, padding: "1px 8px", fontSize: ".7rem", fontWeight: 800 }}>{badges[it.section]}</span> : null}
+            </Link>
+          ))}
+        </div>
+      </section>
+    </AdminLayout>
   );
+}
+
+function Empty({ text }) {
+  return <div style={{ padding: "26px 16px", textAlign: "center", color: "#6B7C6E", fontSize: ".88rem" }}>{text}</div>;
 }

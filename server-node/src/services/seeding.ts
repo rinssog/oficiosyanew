@@ -704,6 +704,7 @@ export const seedInitialUser = () => {
       email: "admin@oficiosya.com",
       name: "OficiosYa Admin",
       role: "ADMIN",
+      staffRole: "MANAGER",
       passwordHash: ADMIN_SEED_HASH,
       createdAt: Date.now(),
     };

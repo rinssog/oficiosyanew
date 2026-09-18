@@ -6,6 +6,7 @@ const DEFAULT_TTL = process.env.JWT_TTL || "7d";
 export interface JwtPayload {
   sub: string; // user id
   role: string;
+  staffRole?: string | null; // solo para ADMIN: MANAGER | SENIOR | TEAM | IT | SALES
 }
 
 export function signToken(payload: JwtPayload, ttl: string = DEFAULT_TTL) {

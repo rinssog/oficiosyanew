@@ -8,6 +8,12 @@ import { LoginSchema, RegisterSchema } from "../validation/schemas.js";
 import { signToken } from "../security/jwt.js";
 import { getRepos } from "../repositories/factory.js";
 import { authRequired } from "../security/middleware.js";
+import { normalizeStaffRole } from "../security/staffRoles.js";
+
+/** staffRole solo aplica a ADMIN; para el resto es null. */
+function staffRoleFor(user: any): string | null {
+  return user?.role === "ADMIN" ? normalizeStaffRole(user.staffRole) : null;
+}
 
 const router = Router();
 
@@ -47,8 +53,9 @@ router.post("/users/register", async (req, res) => {
     ensureProviderProfile(provider.id);
   }
 
-  const token = signToken({ sub: user.id, role: user.role });
-  res.json({ ok: true, token, user: { id: user.id, email: user.email, name: user.name, role: user.role }, provider });
+  const staffRole = staffRoleFor(user);
+  const token = signToken({ sub: user.id, role: user.role, staffRole });
+  res.json({ ok: true, token, user: { id: user.id, email: user.email, name: user.name, role: user.role, staffRole }, provider });
 });
 
 router.post("/users/login", async (req, res) => {
@@ -62,11 +69,12 @@ router.post("/users/login", async (req, res) => {
   const valid = await bcrypt.compare(password || "", user.passwordHash);
   if (!valid) return res.status(401).json({ ok: false, error: "Credenciales invalidas" });
 
-  const token = signToken({ sub: user.id, role: user.role });
+  const staffRole = staffRoleFor(user);
+  const token = signToken({ sub: user.id, role: user.role, staffRole });
   const providers = readJson<any[]>("providers", []);
   const provider = providers.find((p) => p.userId === user.id) || null;
 
-  res.json({ ok: true, token, user: { id: user.id, email: user.email, name: user.name, role: user.role }, provider });
+  res.json({ ok: true, token, user: { id: user.id, email: user.email, name: user.name, role: user.role, staffRole }, provider });
 });
 
 /* ── GET /auth/me ─── validate token + return current user info ── */
@@ -78,7 +86,8 @@ router.get("/auth/me", authRequired, (req, res) => {
   if (!user) return res.status(404).json({ ok: false, error: "Usuario no encontrado" });
   const providers = readJson<any[]>("providers", []);
   const provider = providers.find((p) => p.userId === user.id) || null;
-  return res.json({ ok: true, user: { id: user.id, email: user.email, name: user.name, role: user.role }, provider });
+  const staffRole = staffRoleFor(user);
+  return res.json({ ok: true, user: { id: user.id, email: user.email, name: user.name, role: user.role, staffRole }, provider });
 });
 
 export default router;
