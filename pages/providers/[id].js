@@ -46,6 +46,8 @@ export default function ProviderPublicPage() {
   const [data,    setData]    = useState(null);
   const [loading, setLoading] = useState(true);
   const [error,   setError]   = useState(null);
+  const [reviews, setReviews] = useState([]);
+  const [reviewsLoading, setReviewsLoading] = useState(true);
 
   useEffect(() => {
     if (!id) return;
@@ -59,6 +61,20 @@ export default function ProviderPublicPage() {
       })
       .catch(e => setError(e.message))
       .finally(() => setLoading(false));
+  }, [id]);
+
+  // Cargar reseñas reales del prestador
+  useEffect(() => {
+    if (!id) return;
+    setReviewsLoading(true);
+    fetch(`${API_BASE}/api/ratings/provider/${id}`)
+      .then(r => r.json())
+      .then(p => {
+        const list = p?.ratings || p?.reviews || [];
+        setReviews(Array.isArray(list) ? list : []);
+      })
+      .catch(() => setReviews([]))
+      .finally(() => setReviewsLoading(false));
   }, [id]);
 
   const displayName = data?.owner?.name || data?.owner?.email || "Prestador";
@@ -222,17 +238,54 @@ export default function ProviderPublicPage() {
                 )}
               </div>
 
-              {/* Reseñas placeholder */}
+              {/* Reseñas */}
               <div style={{ background: "#fff", borderRadius: 16, border: "1.5px solid #D4E0D6", padding: "18px 22px" }}>
-                <div style={{ fontWeight: 800, color: F, fontSize: 14, marginBottom: 8 }}>⭐ Reseñas</div>
-                {reviewCount === 0 ? (
-                  <p style={{ color: "var(--text-muted)", margin: 0, fontSize: 13 }}>
-                    Este prestador todavía no tiene reseñas. ¡Sé el primero en contratar y calificar!
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, marginBottom: 12 }}>
+                  <div style={{ fontWeight: 800, color: F, fontSize: 15 }}>⭐ Reseñas</div>
+                  {reviewCount > 0 && (
+                    <div style={{ fontSize: 13, color: "#6B7C6E" }}>
+                      <b style={{ color: F }}>{rating.toFixed(1)}</b> ★ · {reviewCount} reseña{reviewCount !== 1 ? "s" : ""}
+                    </div>
+                  )}
+                </div>
+                {reviewsLoading ? (
+                  <p style={{ color: "#6B7C6E", margin: 0, fontSize: 13 }}>Cargando reseñas…</p>
+                ) : reviews.length === 0 ? (
+                  <p style={{ color: "#6B7C6E", margin: 0, fontSize: 13 }}>
+                    {reviewCount === 0
+                      ? "Este prestador todavía no tiene reseñas. ¡Sé el primero en contratar y calificar!"
+                      : "Todavía no hay comentarios publicados."}
                   </p>
                 ) : (
-                  <p style={{ color: "var(--text-muted)", margin: 0, fontSize: 13 }}>
-                    {reviewCount} reseñas con promedio de {rating.toFixed(1)}★. Cargando últimas reseñas...
-                  </p>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                    {reviews.slice(0, 10).map((rv, i) => {
+                      const score = Math.max(0, Math.min(5, Math.round(rv.score || rv.quality || 0)));
+                      const when = rv.createdAt ? new Date(typeof rv.createdAt === "number" ? rv.createdAt : Date.parse(rv.createdAt)) : null;
+                      const whenTxt = when && !isNaN(when) ? when.toLocaleDateString("es-AR", { day: "2-digit", month: "short", year: "numeric" }) : "";
+                      return (
+                        <div key={rv.id || i} style={{ borderTop: i ? "1px solid #F0F4EF" : "none", paddingTop: i ? 12 : 0 }}>
+                          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                              <div style={{ width: 30, height: 30, borderRadius: "50%", background: "#E7F6EC", color: F, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 12 }}>
+                                {(rv.clientName || "Cliente").slice(0, 1).toUpperCase()}
+                              </div>
+                              <div style={{ fontSize: 13, fontWeight: 700, color: "#12261A" }}>{rv.clientName || "Cliente verificado"}</div>
+                            </div>
+                            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                              <span style={{ color: "#C9A227", fontSize: 13, letterSpacing: 1 }}>{"★".repeat(score)}<span style={{ color: "#D4E0D6" }}>{"★".repeat(5 - score)}</span></span>
+                              {whenTxt && <span style={{ fontSize: 11, color: "#9CA3AF" }}>{whenTxt}</span>}
+                            </div>
+                          </div>
+                          {rv.comment && <p style={{ margin: "6px 0 0 38px", fontSize: 13, color: "#374151", lineHeight: 1.5 }}>{rv.comment}</p>}
+                          {rv.response && (
+                            <div style={{ margin: "8px 0 0 38px", padding: "8px 10px", background: "#F7F9F5", borderRadius: 8, fontSize: 12.5, color: "#374151" }}>
+                              <b style={{ color: F }}>Respuesta del prestador:</b> {rv.response}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
                 )}
               </div>
             </div>
